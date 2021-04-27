@@ -1,0 +1,50 @@
+html {
+  font-size: calc(min(3vmin,20px)) !important;
+}
+
+body {
+  font-size: 1rem !important;
+  position: relative !important;
+  height: 100vh !important;
+  overflow-y: hidden !important;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: #D73F09 !important;
+}
+
+.ui.primary.button {
+  background-color: #D73F09 !important;
+}
+
+.ui.primary.button:hover {
+  filter: brightness(90%);
+}
+
+.ui.primary.button:active {
+  filter: brightness(80%);
+}
+
+.ui.icon i.icons .corner.icon {
+  text-shadow:
+  -1px -1px 0 #D73F09,
+  1px -1px 0 #D73F09,
+  -1px 1px 0 #D73F09,
+  1px 1px 0 #D73F09;
+}
+
+.ui.input input:focus {
+  border-color: #D73F09;
+}
+
+.ui.grid {
+  margin-left: -0.5rem !important;
+  margin-right: -0.5rem !important;
+}
+
+.ui.grid >* {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}

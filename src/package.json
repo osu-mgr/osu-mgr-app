@@ -1,0 +1,13 @@
+{
+  "name": "osu-mgr-app",
+  "productName": "OSU-MGR App",
+  "version": "3.0.0-alpha.6",
+  "description": "OSU-MGR App",
+  "author": "Rupert Minnett",
+  "scripts": {
+    "electron-rebuild": "node -r ../.erb/scripts/BabelRegister.js ../.erb/scripts/ElectronRebuild.js",
+    "postinstall": "yarn electron-rebuild"
+  },
+  "license": "MIT",
+  "dependencies": {}
+}

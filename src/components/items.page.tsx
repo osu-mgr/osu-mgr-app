@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { List, Input, Grid, Button, Icon, Label } from 'semantic-ui-react';
 import { useRecoilValue } from 'recoil';
 import ListItemHistoryPushLink from './list.item.history-push.link';
@@ -22,6 +22,17 @@ import {
   diveSubsamplesState,
   diveSubsampleIcon,
 } from '../stores/items';
+import { countByType } from '../es';
+
+const countEffect = (val, set, type) => {
+  useEffect(() => {
+    if (val === undefined) {
+      (async () => {
+        set(await countByType(type));
+      })();
+    }
+  });
+}
 
 const ItemsPage: FunctionComponent = () => {
   const cruises = useRecoilValue(cruisesState);
@@ -32,6 +43,11 @@ const ItemsPage: FunctionComponent = () => {
   const dives = useRecoilValue(divesState);
   const diveSamples = useRecoilValue(diveSamplesState);
   const diveSubsamples = useRecoilValue(diveSubsamplesState);
+  const [cruisesCount, setCruisesCount] = useState<number | undefined>(
+    undefined
+  );
+  countEffect(cruisesCount, setCruisesCount, 'cruise');
+
   console.log('cruises', cruises);
   return (
     <List relaxed divided>
@@ -66,7 +82,9 @@ const ItemsPage: FunctionComponent = () => {
       </Grid>
       <ListItemHistoryPushLink
         path="Cruises/Programs"
-        title="Cruises/Programs"
+        title={`${
+          cruisesCount === undefined ? '? ' : `${cruisesCount} `
+        }Cruises/Programs`}
         icon={cruiseIcon}
       >
         <Label

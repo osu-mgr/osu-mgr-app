@@ -2,7 +2,7 @@ import _ from 'lodash';
 import electron from 'electron';
 import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
 
-import { Item } from './stores/items';
+import { Item, Items } from './stores/items';
 
 // Complete definition of the Search response
 interface ShardsResponse {
@@ -70,13 +70,16 @@ async function* scrollSearch(params: any) {
   }
 }
 
-export const indexDoc = async (uuid: string, doc: Item) => {
-  const params: RequestParams.Index = {
-    id: uuid,
-    index,
-    body: doc || {},
-  };
-  return client.index(params);
+export const indexDocs = async (docs: Items[]) => {
+  const { body: bulkResponse } = await client.bulk({
+    refresh: true,
+    body: _.flatMap(docs, (doc) => {
+      return doc === undefined
+        ? []
+        : [{ index: { _index: index, _id: doc?._uuid } }, doc];
+    }),
+  });
+  return bulkResponse.errors;
 };
 
 export const searchByIGSNPrefix = async (
@@ -84,10 +87,18 @@ export const searchByIGSNPrefix = async (
 ): Promise<Hit[]> => {
   console.log('searchByIGSNPrefix', index, igsnPrefix);
   const params: RequestParams.Search = {
+    size: 10000,
     index,
     body: {
-      sort: [{ modified: 'desc' }],
-      query: { prefix: { _igsn: igsnPrefix } },
+      sort: [{ _modified: 'desc' }],
+      query: {
+        bool: {
+          should: [
+            { prefix: { '_igsn.keyword': `${igsnPrefix}-` } },
+            { term: { '_igsn.keyword': igsnPrefix } },
+          ],
+        },
+      },
     },
   };
   const docs: Hit[] = [];
@@ -96,6 +107,21 @@ export const searchByIGSNPrefix = async (
   }
   console.log('searchByIGSNPrefix docs', igsnPrefix, docs);
   return docs;
+};
+
+export const countByType = async (docType: string): Promise<number> => {
+  const params: RequestParams.Count = {
+    index,
+    body: {
+      query: { term: { _docType: docType } },
+    },
+  };
+  let count = -1;
+  const response = await client.count(params);
+  if (response && response.body && response.body.count >= 0)
+    count = response.body.count as number;
+  console.log('countByType', docType, count, response);
+  return count;
 };
 
 export const searchRecent = async (gte: string): Promise<Hit[]> => {

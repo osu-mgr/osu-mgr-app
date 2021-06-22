@@ -15,6 +15,7 @@ import { loginState } from '../stores/accounts';
 import {
   docTypesHierarchy,
   Item,
+  Items,
   ItemsCollection,
   ItemsCounts,
   Cruise,
@@ -42,7 +43,7 @@ import {
   diveSubsampleIcon,
   sectionHalfTypes,
 } from '../stores/items';
-import { Hit, searchByIGSNPrefix } from '../es';
+import { Hit, searchByIGSNPrefix, indexDocs } from '../es';
 
 function omitEmpty(before: Record<string, string>) {
   const after: Record<string, string> = {};
@@ -336,7 +337,7 @@ async function prepareItemDocs(
     const existingDocs: Hit[] = (
       await Promise.all(
         _.keys(items.cruises).map((cruiseID) =>
-          searchByIGSNPrefix(`OSU-${cruiseID}-`)
+          searchByIGSNPrefix(`OSU-${cruiseID}`)
         )
       )
     ).flat(1);
@@ -348,18 +349,20 @@ async function prepareItemDocs(
     }
     const uuidToReplace = {};
     for (const itemDocType of _.keys(items)) {
-      for (const item of items[itemDocType] as Item[]) {
+      for (const itemName of _.keys(items[itemDocType])) {
+        const item = items[itemDocType][itemName];
         if (item && item._igsn && existingDocsByIGSN[item._igsn]) {
-          const existingDoc = existingDocsByIGSN[item?._igsn];
+          const existingDoc = existingDocsByIGSN[item._igsn];
           item._history[0].action = 'update';
           item._history = [...existingDoc._history, item._history[0]];
-          item._uuid = uuidToReplace[item?._uuid];
+          item._uuid = existingDoc._uuid;
           uuidToReplace[item._uuid] = existingDoc._uuid;
         }
       }
     }
     for (const itemDocType of _.keys(items)) {
-      for (const item of items[itemDocType] as Item[]) {
+      for (const itemName of _.keys(items[itemDocType])) {
+        const item = items[itemDocType][itemName];
         for (const docType of _.keys(docTypesHierarchy)) {
           if (
             item && [`_uuid${docType}`] &&
@@ -370,6 +373,7 @@ async function prepareItemDocs(
       }
     }
   } catch (e) {
+    console.error(e);
     errors.push({ searchByID: e });
     return { items, errors };
   }
@@ -413,7 +417,6 @@ async function parseFiles(
         for (const row of rows) {
           parsedItems = parseMasterSheetRow(row, login, parsedItems);
         }
-        console.log('parsed items', parsedItems);
         const {
           items: preparedItems,
           errors: prepareErrors,
@@ -433,7 +436,6 @@ async function parseFiles(
       }
     }
   });
-  console.log('parseFiles', fileItems, errors);
   return { fileItems, errors };
 }
 
@@ -450,20 +452,15 @@ async function importFileItems(fileItems: {
   errors: Record<string, unknown>[];
 }> {
   const importedCounts = {};
-  const errors: Record<string, unknown>[] = [];
+  let docs: Items[] = [];
   for (const filePath of _.keys(fileItems)) {
-    console.log('importFileItems filePath', filePath);
     for (const docType of _.keys(fileItems[filePath])) {
-      console.log(
-        'importFileItems docType',
-        docType,
-        _.keys(fileItems[filePath][docType]).length
-      );
       importedCounts[docType] = importedCounts[docType] || 0;
       importedCounts[docType] += _.keys(fileItems[filePath][docType]).length;
+      docs = [...docs, ..._.values(fileItems[filePath][docType])];
     }
   }
-  console.log('importFileItems importedCounts', importedCounts);
+  const errors = await indexDocs(docs);
   return { importedCounts, errors };
 }
 
@@ -479,22 +476,24 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
   // const [errors, setErrors] = useState<object[]>([]);
   const login = useRecoilValue(loginState);
   useEffect(() => {
-    if (!parsing && filePaths.length > 0 && loading === 'Parsing')
+    if (!parsing && filePaths.length > 0 && loading === 'Parsing') {
+      setParsing(true);
       (async () => {
-        setParsing(true);
         const {
           fileItems: newFileItems,
           errors: parseErrors,
         } = await parseFiles(filePaths, login);
+
         console.log('parsed items', newFileItems, parseErrors);
         setFileItems(newFileItems);
         setLoading('');
       })();
+    }
   }, [parsing, filePaths, loading, login]);
   useEffect(() => {
-    if (!importing && fileItems && loading === 'Importing')
+    if (!importing && fileItems && loading === 'Importing') {
+      setImporting(true);
       (async () => {
-        setImporting(true);
         const {
           importedCounts: newImportedCounts,
           errors: importErrors,
@@ -503,9 +502,17 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
         setImportedCounts(newImportedCounts);
         setLoading('');
       })();
+    }
   }, [importing, fileItems, loading]);
 
-  console.log('ItemsImportModal', loading, fileItems);
+  const x = _.keys(fileItems).length > 0 && _.keys(fileItems)[0];
+  console.log(
+    'ItemsImportModal',
+    loading,
+    fileItems,
+    _.keys(fileItems).length,
+    fileItems && x && fileItems[x].cruises
+  );
   return (
     <Modal
       trigger={children}

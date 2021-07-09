@@ -77,6 +77,7 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.ico'),
     webPreferences: {
+      contextIsolation: false,
       enableRemoteModule: true,
       nodeIntegration: true,
     },

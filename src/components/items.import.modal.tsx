@@ -8,12 +8,13 @@ import path from 'path';
 import * as XLSX from 'xlsx';
 import React, { FunctionComponent, useState, useEffect } from 'react';
 import { Button, Icon, Grid, List, Dimmer, Segment } from 'semantic-ui-react';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useRecoilState } from 'recoil';
 import Modal from './modal';
 import GridIconRow from './grid.icon-row';
-import { loginState } from '../stores/accounts';
 import {
   docTypesHierarchy,
+  itemsSearchState,
+  loginState,
   Item,
   Items,
   ItemsCollection,
@@ -41,9 +42,10 @@ import {
   DiveSubsample,
   DiveSubsampleData,
   diveSubsampleIcon,
+  coreTypes,
   sectionHalfTypes,
 } from '../stores/items';
-import { Hit, searchByIGSNPrefix, indexDocs } from '../es';
+import { Hit, searchByOSUIDPrefix, indexDocs } from '../es';
 
 function omitEmpty(before: Record<string, string>) {
   const after: Record<string, string> = {};
@@ -54,15 +56,82 @@ function omitEmpty(before: Record<string, string>) {
   return after;
 }
 
+function validateItem(item: Item): Item {
+  if (item !== undefined) {
+    item._errors = [];
+    item._warnings = [];
+    if (
+      item._docType === 'cruise' &&
+      (item.pi === undefined || item.pi.trim() === '')
+    ) {
+      item._errors.push('PI is missing or invalid');
+    }
+    if (
+      item._docType === 'core' &&
+      (item.latitudeStart === undefined ||
+        Number.isNaN(Number.parseFloat(item.latitudeStart)))
+    ) {
+      item._errors.push('Latitude Start is missing or invalid');
+    }
+    if (
+      item._docType === 'core' &&
+      (item.longitudeStart === undefined ||
+        Number.isNaN(Number.parseFloat(item.longitudeStart)))
+    ) {
+      item._errors.push('Longitude Start is missing or invalid');
+    }
+    if (
+      item._docType === 'core' &&
+      (item.waterDepthStart === undefined ||
+        Number.isNaN(Number.parseFloat(item.waterDepthStart)))
+    ) {
+      item._errors.push('Water Depth Start is missing or invalid');
+    }
+    if (
+      item._docType === 'core' &&
+      (item.nSections === undefined ||
+        Number.isNaN(Number.parseInt(item.nSections, 10)))
+    ) {
+      item._errors.push('N Sections is missing or invalid');
+    }
+    if (
+      item._docType === 'core' &&
+      (item.length === undefined ||
+        Number.isNaN(Number.parseFloat(item.length)))
+    ) {
+      item._errors.push('Length is missing or invalid');
+    }
+    if (
+      item._docType === 'section' &&
+      (item.depthTop === undefined ||
+        Number.isNaN(Number.parseFloat(item.depthTop)))
+    ) {
+      item._errors.push('Depth Top is missing or invalid');
+    }
+    if (
+      item._docType === 'section' &&
+      (item.depthBottom === undefined ||
+        Number.isNaN(Number.parseFloat(item.depthBottom)))
+    ) {
+      item._errors.push('Depth Bottom is missing or invalid');
+    }
+  }
+  return item;
+}
+
 function parseMasterSheetRow(
   row: Record<string, string>,
   login: string,
   items: ItemsCollection
 ): ItemsCollection {
+  console.log('parseMasterSheetRow', row);
   const thisCruise: CruiseData = omitEmpty({
     id: row['CRUISE Name'],
     name: row['{Cruise Name or Program Name}'],
     rvName: row['RV Name'],
+    pi: row['Contact PI'],
+    piInstitution: row['PI Institution'],
+    piEmail: row['Contact PI email'],
   });
   const cruiseID = thisCruise.id || 'Cruise?';
   const cruiseUUID =
@@ -75,14 +144,15 @@ function parseMasterSheetRow(
     const cruise: Cruise = {
       ...items.cruises[cruiseID],
       ...thisCruise,
-      _igsn: `OSU-${cruiseID}`,
+      _cruiseID: cruiseID,
+      _osuid: `OSU-${cruiseID}`,
       _uuid: cruiseUUID,
       _cruiseUUID: cruiseUUID,
       _docType: 'cruise',
       _modified: DateTime.now().toISO(),
       _history: [{ login, datetime: DateTime.now().toISO(), action: 'insert' }],
     };
-    items.cruises[cruiseID] = cruise;
+    items.cruises[cruiseID] = validateItem(cruise) as Cruise;
   }
 
   const thisCore: CoreData = omitEmpty(
@@ -104,15 +174,15 @@ function parseMasterSheetRow(
           area: row['{Area}'],
           place: row['{Place Name}'],
           notes: row['{Notes}'],
-          pi: row['Contact PI'],
-          piInstitution: row['PI Institution'],
-          piEmail: row['Contact PI email'],
           diameter: row['Core Diameter'],
           length: row['Parent Core Length'],
+          nSections: row['Number of Parent Core Sections'],
         }
       : {}
   );
-  const coreID = `${cruiseID}-${thisCore.id || 'Core?'}`;
+  const coreID = `${cruiseID}-${thisCore.id || 'Core?'}${
+    coreTypes[thisCore.method || ''] || 'Method?'
+  }`;
   const coreUUID =
     (items.cores && items.cores[coreID] && items.cores[coreID]._uuid) ||
     uuIDV4();
@@ -121,8 +191,10 @@ function parseMasterSheetRow(
     const core: Core = {
       ...items.cores[coreID],
       ...thisCore,
-      cruise: cruiseID,
-      _igsn: `OSU-${coreID}`,
+      _cruiseID: cruiseID,
+      _coreNumber:
+        (thisCore.id && Number.parseInt(thisCore.id, 10)) || undefined,
+      _osuid: `OSU-${coreID}`,
       _uuid: coreUUID,
       _cruiseUUID: cruiseUUID,
       _coreUUID: coreUUID,
@@ -130,15 +202,19 @@ function parseMasterSheetRow(
       _modified: DateTime.now().toISO(),
       _history: [{ login, datetime: DateTime.now().toISO(), action: 'insert' }],
     };
-    items.cores[coreID] = core;
+    items.cores[coreID] = validateItem(core) as Core;
   }
 
-  const thisSection: SectionData = omitEmpty({
-    id: row['SECTION or MC #'],
-    alternateName: row['{Alternate Section Name}'],
-    depthTop: row['DEPTH TOP (cm)'],
-    depthBottom: row['SECTION LENGTH (cm)'],
-  });
+  const thisSection: SectionData = omitEmpty(
+    row['Recovery Method'] === undefined || !diveTypes[row['Recovery Method']]
+      ? {
+          id: row['SECTION or MC #'],
+          alternateName: row['{Alternate Section Name}'],
+          depthTop: row['DEPTH TOP (cm)'],
+          depthBottom: row['DEPTH BOTTOM (cm)'],
+        }
+      : {}
+  );
   const sectionID = `${coreID}-${thisSection.id || 'Section?'}`;
   const sectionUUID =
     (items.sections &&
@@ -150,8 +226,12 @@ function parseMasterSheetRow(
     const section: Section = {
       ...items.sections[sectionID],
       ...thisSection,
-      core: coreID,
-      _igsn: `OSU-${sectionID}`,
+      _cruiseID: cruiseID,
+      _coreNumber:
+        (thisCore.id && Number.parseInt(thisCore.id, 10)) || undefined,
+      _sectionNumber:
+        (thisSection.id && Number.parseInt(thisSection.id, 10)) || undefined,
+      _osuid: `OSU-${sectionID}`,
       _uuid: sectionUUID,
       _cruiseUUID: cruiseUUID,
       _coreUUID: coreUUID,
@@ -160,16 +240,20 @@ function parseMasterSheetRow(
       _modified: DateTime.now().toISO(),
       _history: [{ login, datetime: DateTime.now().toISO(), action: 'insert' }],
     };
-    items.sections[sectionID] = section;
+    items.sections[sectionID] = validateItem(section) as Section;
   }
 
-  const thisSectionHalf: SectionHalfData = omitEmpty({
-    type: row['Working/Archive'],
-  });
+  const thisSectionHalf: SectionHalfData = omitEmpty(
+    row['Recovery Method'] === undefined || !diveTypes[row['Recovery Method']]
+      ? {
+          type: row['Working/Archive'],
+        }
+      : {}
+  );
   const sectionHalfType =
     (thisSectionHalf.type && sectionHalfTypes[thisSectionHalf.type]) ||
     undefined;
-  const sectionHalfID = `${sectionID}-${sectionHalfType || 'SectionHalf?'}`;
+  const sectionHalfID = `${sectionID}${sectionHalfType || 'SectionHalf?'}`;
   const sectionHalfUUID =
     (items.sectionHalves &&
       items.sectionHalves[sectionHalfID] &&
@@ -180,8 +264,12 @@ function parseMasterSheetRow(
     const sectionHalf: SectionHalf = {
       ...items.sectionHalves[sectionHalfID],
       ...thisSectionHalf,
-      section: sectionID,
-      _igsn: `OSU-${sectionHalfID}`,
+      _cruiseID: cruiseID,
+      _coreNumber:
+        (thisCore.id && Number.parseInt(thisCore.id, 10)) || undefined,
+      _sectionNumber:
+        (thisSection.id && Number.parseInt(thisSection.id, 10)) || undefined,
+      _osuid: `OSU-${sectionHalfID}`,
       _uuid: sectionHalfUUID,
       _cruiseUUID: cruiseUUID,
       _coreUUID: coreUUID,
@@ -191,7 +279,9 @@ function parseMasterSheetRow(
       _modified: DateTime.now().toISO(),
       _history: [{ login, datetime: DateTime.now().toISO(), action: 'insert' }],
     };
-    items.sectionHalves[sectionHalfID] = sectionHalf;
+    items.sectionHalves[sectionHalfID] = validateItem(
+      sectionHalf
+    ) as SectionHalf;
   }
 
   const thisDive: DiveData = omitEmpty(
@@ -203,15 +293,14 @@ function parseMasterSheetRow(
           area: row['{Area}'],
           place: row['{Place Name}'],
           // notes: row['{Notes}'],
-          pi: row['Contact PI'],
-          piInstitution: row['PI Institution'],
-          piEmail: row['Contact PI email'],
           rov: row['ROV Name'],
           weight: row['Recovery Weight (kg)'],
         }
       : {}
   );
-  const diveID = `${cruiseID}-${thisDive.id || 'Dive?'}`;
+  const diveID = `${cruiseID}-${diveTypes[thisDive.method || ''] || 'Method?'}${
+    thisDive.id || 'Dive?'
+  }`;
   const diveUUID =
     (items.dives && items.dives[diveID] && items.dives[diveID]._uuid) ||
     uuIDV4();
@@ -220,8 +309,10 @@ function parseMasterSheetRow(
     const dive: Dive = {
       ...items.dives[diveID],
       ...thisDive,
-      cruise: cruiseID,
-      _igsn: `OSU-${diveID}`,
+      _cruiseID: cruiseID,
+      _diveNumber:
+        (thisDive.id && Number.parseInt(thisDive.id, 10)) || undefined,
+      _osuid: `OSU-${diveID}`,
       _uuid: diveUUID,
       _cruiseUUID: cruiseUUID,
       _diveUUID: diveUUID,
@@ -229,11 +320,13 @@ function parseMasterSheetRow(
       _modified: DateTime.now().toISO(),
       _history: [{ login, datetime: DateTime.now().toISO(), action: 'insert' }],
     };
-    items.dives[diveID] = dive;
+    items.dives[diveID] = validateItem(dive) as Dive;
   }
 
   const thisDiveSample: DiveSampleData = omitEmpty(
-    row['{Subsample Number}'] === undefined
+    row['{Subsample Number}'] === undefined &&
+      row['Recovery Method'] !== undefined &&
+      diveTypes[row['Recovery Method']]
       ? {
           id: row['Sample Number'],
           startDate: row['Date Collected'],
@@ -268,8 +361,13 @@ function parseMasterSheetRow(
     const diveSample: DiveSample = {
       ...items.diveSamples[diveSampleID],
       ...thisDiveSample,
-      dive: diveID,
-      _igsn: `OSU-${diveID}`,
+      _cruiseID: cruiseID,
+      _diveNumber:
+        (thisDive.id && Number.parseInt(thisDive.id, 10)) || undefined,
+      _diveSampleNumber:
+        (thisDiveSample.id && Number.parseInt(thisDiveSample.id, 10)) ||
+        undefined,
+      _osuid: `OSU-${diveSampleID}`,
       _uuid: diveSampleUUID,
       _cruiseUUID: cruiseUUID,
       _diveUUID: diveUUID,
@@ -278,11 +376,13 @@ function parseMasterSheetRow(
       _modified: DateTime.now().toISO(),
       _history: [{ login, datetime: DateTime.now().toISO(), action: 'insert' }],
     };
-    items.diveSamples[diveSampleID] = diveSample;
+    items.diveSamples[diveSampleID] = validateItem(diveSample) as DiveSample;
   }
 
   const thisDiveSubsample: DiveSubsampleData = omitEmpty(
-    row['{Subsample Number}'] !== undefined
+    row['{Subsample Number}'] !== undefined &&
+      row['Recovery Method'] !== undefined &&
+      diveTypes[row['Recovery Method']]
       ? {
           id: row['{Subsample Number}'],
           weight: row['Sample Weight (kg)'],
@@ -309,8 +409,13 @@ function parseMasterSheetRow(
     const diveSubsample: DiveSubsample = {
       ...items.diveSubsamples[diveSubsampleID],
       ...thisDiveSubsample,
-      sample: diveSampleID,
-      _igsn: `OSU-${diveID}`,
+      _cruiseID: cruiseID,
+      _diveNumber:
+        (thisDive.id && Number.parseInt(thisDive.id, 10)) || undefined,
+      _diveSampleNumber:
+        (thisDiveSample.id && Number.parseInt(thisDiveSample.id, 10)) ||
+        undefined,
+      _osuid: `OSU-${diveSubsampleUUID}`,
       _uuid: diveSubsampleUUID,
       _cruiseUUID: cruiseUUID,
       _diveUUID: diveUUID,
@@ -320,15 +425,16 @@ function parseMasterSheetRow(
       _modified: DateTime.now().toISO(),
       _history: [{ login, datetime: DateTime.now().toISO(), action: 'insert' }],
     };
-    items.diveSubsamples[diveSubsampleID] = diveSubsample;
+    items.diveSubsamples[diveSubsampleID] = validateItem(
+      diveSubsample
+    ) as DiveSubsample;
   }
 
+  console.log('parseMasterSheetRow items', items);
   return items;
 }
 
-async function prepareItemDocs(
-  items: ItemsCollection
-): Promise<{
+async function prepareItemDocs(items: ItemsCollection): Promise<{
   items: ItemsCollection;
   errors: Record<string, unknown>[];
 }> {
@@ -337,26 +443,26 @@ async function prepareItemDocs(
     const existingDocs: Hit[] = (
       await Promise.all(
         _.keys(items.cruises).map((cruiseID) =>
-          searchByIGSNPrefix(`OSU-${cruiseID}`)
+          searchByOSUIDPrefix(`OSU-${cruiseID}`)
         )
       )
     ).flat(1);
-    const existingDocsByIGSN = {};
+    const existingDocsByOSUID = {};
     for (const doc of existingDocs) {
-      if (doc._source && doc._source._uuid && doc._source._igsn) {
-        existingDocsByIGSN[doc._source._igsn] = doc._source;
+      if (doc._source && doc._source._uuid && doc._source._osuid) {
+        existingDocsByOSUID[doc._source._osuid] = doc._source;
       }
     }
     const uuidToReplace = {};
     for (const itemDocType of _.keys(items)) {
       for (const itemName of _.keys(items[itemDocType])) {
         const item = items[itemDocType][itemName];
-        if (item && item._igsn && existingDocsByIGSN[item._igsn]) {
-          const existingDoc = existingDocsByIGSN[item._igsn];
+        if (item && item._osuid && existingDocsByOSUID[item._osuid]) {
+          const existingDoc = existingDocsByOSUID[item._osuid];
           item._history[0].action = 'update';
-          item._history = [...existingDoc._history, item._history[0]];
-          item._uuid = existingDoc._uuid;
+          item._history = [item._history[0], ...existingDoc._history];
           uuidToReplace[item._uuid] = existingDoc._uuid;
+          item._uuid = existingDoc._uuid;
         }
       }
     }
@@ -365,10 +471,11 @@ async function prepareItemDocs(
         const item = items[itemDocType][itemName];
         for (const docType of _.keys(docTypesHierarchy)) {
           if (
-            item && [`_uuid${docType}`] &&
-            uuidToReplace[item[`_uuid${docType}`]]
+            item &&
+            item[`_${docType}UUID`] &&
+            uuidToReplace[item[`_${docType}UUID`]]
           )
-            item[`_uuid${docType}`] = uuidToReplace[item[`_uuid${docType}`]];
+            item[`_${docType}UUID`] = uuidToReplace[item[`_${docType}UUID`]];
         }
       }
     }
@@ -461,6 +568,7 @@ async function importFileItems(fileItems: {
     }
   }
   const errors = await indexDocs(docs);
+  console.log('importedCounts', importedCounts, errors);
   return { importedCounts, errors };
 }
 
@@ -475,29 +583,30 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
   const [loading, setLoading] = useState('');
   // const [errors, setErrors] = useState<object[]>([]);
   const login = useRecoilValue(loginState);
+  const [search, setSearch] = useRecoilState(itemsSearchState);
   useEffect(() => {
-    if (!parsing && filePaths.length > 0 && loading === 'Parsing') {
+    if (
+      login._uuid !== undefined &&
+      !parsing &&
+      filePaths.length > 0 &&
+      loading === 'Parsing'
+    ) {
       setParsing(true);
       (async () => {
-        const {
-          fileItems: newFileItems,
-          errors: parseErrors,
-        } = await parseFiles(filePaths, login);
-
+        const { fileItems: newFileItems, errors: parseErrors } =
+          await parseFiles(filePaths, login._uuid as string);
         console.log('parsed items', newFileItems, parseErrors);
         setFileItems(newFileItems);
         setLoading('');
       })();
     }
-  }, [parsing, filePaths, loading, login]);
+  }, [parsing, filePaths, loading, login._uuid]);
   useEffect(() => {
     if (!importing && fileItems && loading === 'Importing') {
       setImporting(true);
       (async () => {
-        const {
-          importedCounts: newImportedCounts,
-          errors: importErrors,
-        } = await importFileItems(fileItems);
+        const { importedCounts: newImportedCounts, errors: importErrors } =
+          await importFileItems(fileItems);
         console.log('imported counts', newImportedCounts, importErrors);
         setImportedCounts(newImportedCounts);
         setLoading('');
@@ -505,14 +614,6 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
     }
   }, [importing, fileItems, loading]);
 
-  const x = _.keys(fileItems).length > 0 && _.keys(fileItems)[0];
-  console.log(
-    'ItemsImportModal',
-    loading,
-    fileItems,
-    _.keys(fileItems).length,
-    fileItems && x && fileItems[x].cruises
-  );
   return (
     <Modal
       trigger={children}
@@ -603,6 +704,7 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
         setParsing(false);
         setImporting(false);
         setLoading('');
+        setSearch({ ...search, tap: search.tap + 1 });
       }}
       hideCancel={loading === 'Importing'}
     >

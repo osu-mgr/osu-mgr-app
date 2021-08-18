@@ -1,47 +1,100 @@
 import _ from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
-import { List, Input, Grid, Button, Icon } from 'semantic-ui-react';
+import { List, Grid, Button, Icon } from 'semantic-ui-react';
+import ItemsCruiseProgramModal from './items.cruise-program.modal';
 import ItemsDiveModal from './items.dive.modal';
-import { divesState } from '../stores/items';
-import OSUID from './osu.id';
+import { loginState, itemsSearchState, diveIcon } from '../stores/items';
+import { countByType } from '../es';
+import ItemsSearchBar from './items.search-bar';
+import ItemsCount from './items.count';
+import ItemFilterLabels from './items.filter-labels';
+import ItemsItemRow from './items.item-row';
+import ItemsRowsBlock from './items.item-rows-block';
 
-const ItemsDivesPage: FunctionComponent = () => {
-  const dives = useRecoilValue(divesState);
+const ItemsCores: FunctionComponent = () => {
+  const login = useRecoilValue(loginState);
+  const search = useRecoilValue(itemsSearchState);
+  const [itemsCount, setItemsCount] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    setItemsCount(undefined);
+    (async () => {
+      setItemsCount(await countByType('dive', search));
+    })();
+  }, [search]);
   return (
-    <List relaxed divided>
-      <Input
-        fluid
-        icon="search"
-        iconPosition="left"
-        placeholder="Search Dives ..."
-        style={{ margin: '1rem 0' }}
-      />
-      <Grid style={{ marginBottom: '.5rem' }}>
-        <Grid.Column width={8}>
-          <ItemsDiveModal>
-            <Button primary fluid icon>
-              <Icon name="plus" /> Create
+    <>
+      <List relaxed divided>
+        <ItemsSearchBar plural="Dives" sortable />
+        <Grid style={{ marginBottom: 0 }} columns={2}>
+          <Grid.Column>
+            <ItemsCruiseProgramModal>
+              <Button
+                primary
+                fluid
+                icon
+                disabled={!login || !login._permissions?.includes('edit_items')}
+              >
+                <Icon name="plus" /> Create
+              </Button>
+            </ItemsCruiseProgramModal>
+          </Grid.Column>
+          <Grid.Column>
+            <Button primary icon fluid disabled>
+              <Icon name="file excel" /> Export
             </Button>
-          </ItemsDiveModal>
-        </Grid.Column>
-        <Grid.Column width={8}>
-          <Button primary icon fluid>
-            <Icon name="file excel" /> Export
-          </Button>
-        </Grid.Column>
-      </Grid>
-      {_.keys(dives).map((key) => (
-        <ItemsDiveModal uuID={key} key={key}>
-          <List.Item as="a">
-            <b>
-              <OSUID uuIDs={{ dive: key }} />
-            </b>
-          </List.Item>
-        </ItemsDiveModal>
-      ))}
-    </List>
+          </Grid.Column>
+        </Grid>
+        <List.Item>
+          <List.Content floated="left">
+            <Icon.Group size="big">
+              <Icon
+                name={diveIcon}
+                style={{ padding: 0, minWidth: '2.5rem' }}
+              />
+            </Icon.Group>
+          </List.Content>
+          <List.Content style={{ marginLeft: '3.75rem' }}>
+            <h3 style={{ margin: 0 }}>
+              <ItemsCount type="dive" singular="Dive" plural="Dives" />
+            </h3>
+            <List.Description style={{ marginTop: '.5rem' }}>
+              <ItemFilterLabels type="dive" />
+            </List.Description>
+          </List.Content>
+        </List.Item>
+      </List>
+      {[...Array(Math.max(1, Math.ceil((itemsCount || 1) / 10))).keys()].map(
+        (i) => (
+          <ItemsRowsBlock
+            type="dive"
+            key={i}
+            minRowHeight={50}
+            from={i * 10}
+            size={10}
+            itemRow={(hit) => (
+              <ItemsDiveModal uuid={hit._source._uuid} key={hit._source._uuid}>
+                <List.Item as="a" style={{ minHeight: 50 }}>
+                  <ItemsItemRow
+                    item={hit._source}
+                    matches={hit.highlight}
+                    title={hit._source._osuid}
+                    labels={[
+                      { value: hit._source.texture, detail: '' },
+                      { value: hit._source.description, detail: '' },
+                      { value: hit._source.habitat, detail: '' },
+                      { value: hit._source.comments, detail: '' },
+                    ]}
+                  />
+                </List.Item>
+              </ItemsDiveModal>
+            )}
+          />
+        )
+      )}
+    </>
   );
 };
 
-export default ItemsDivesPage;
+export default ItemsCores;

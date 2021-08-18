@@ -1,14 +1,15 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactFragment } from 'react';
 import { List, Icon, StrictIconProps } from 'semantic-ui-react';
 import { useRecoilState } from 'recoil';
 import { historyState } from '../stores/history';
 
 const ListItemHistoryPushLink: FunctionComponent<{
   path: string;
-  title: string;
+  title: string | ReactFragment;
   icon: StrictIconProps['name'];
   cornerIcon?: StrictIconProps['name'];
-}> = ({ children, path, title, icon, cornerIcon }) => {
+  disabled?: boolean;
+}> = ({ children, path, title, icon, cornerIcon, disabled }) => {
   const [history, setHistory] = useRecoilState(historyState);
   return (
     <List.Item
@@ -25,6 +26,7 @@ const ListItemHistoryPushLink: FunctionComponent<{
             ],
           });
       }}
+      disabled={disabled}
     >
       <List.Content floated="right">
         <Icon disabled size="big" color="grey" name="angle right" />

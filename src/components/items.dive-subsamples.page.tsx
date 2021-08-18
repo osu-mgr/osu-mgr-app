@@ -18,7 +18,7 @@ const ItemsDiveSubsamples: FunctionComponent = () => {
         style={{ margin: '1rem 0' }}
       />
       {_.keys(diveSubsamples).map((key) => (
-        <ItemsCruiseProgramModal uuID={key} key={key}>
+        <ItemsCruiseProgramModal uuid={key} key={key}>
           <List.Item as="a">
             <b>
               <OSUID uuIDs={{ diveSubsample: key }} />

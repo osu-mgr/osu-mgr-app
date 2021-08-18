@@ -1,73 +1,106 @@
 import _ from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
-import { List, Input, Button, Icon, Grid, Dropdown } from 'semantic-ui-react';
+import { List, Button, Icon, Grid } from 'semantic-ui-react';
 import ItemsCruiseProgramModal from './items.cruise-program.modal';
-import { cruisesState } from '../stores/items';
-import OSUID from './osu.id';
+import { loginState, itemsSearchState, cruiseIcon } from '../stores/items';
+import { countByType } from '../es';
+import ItemsSearchBar from './items.search-bar';
+import ItemsCount from './items.count';
+import ItemFilterLabels from './items.filter-labels';
+import ItemsItemRow from './items.item-row';
+import ItemsRowsBlock from './items.item-rows-block';
 
 const ItemsCruisesProgramsPage: FunctionComponent = () => {
-  const cruises = useRecoilValue(cruisesState);
+  const login = useRecoilValue(loginState);
+  const search = useRecoilValue(itemsSearchState);
+  const [itemsCount, setItemsCount] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    setItemsCount(undefined);
+    (async () => {
+      setItemsCount(await countByType('cruise', search));
+    })();
+  }, [search]);
   return (
-    <List relaxed divided>
-      <Input
-        fluid
-        icon="search"
-        iconPosition="left"
-        placeholder="Search Cruises and Programs ..."
-        style={{ margin: '1rem 0' }}
-        action={
-          <Dropdown
-            button
-            options={[
-              {
-                key: 'modified desc',
-                value: 'modified desc',
-                text: (
-                  <>
-                    <Icon name="long arrow alternate down" /> Modified
-                  </>
-                ),
-              },
-              {
-                key: 'modified asc',
-                value: 'modified asc',
-                text: (
-                  <>
-                    <Icon name="long arrow alternate up" /> Modified
-                  </>
-                ),
-              },
-            ]}
-            value="modified desc"
-          />
-        }
-      />
-      <Grid style={{ marginBottom: '.5rem' }}>
-        <Grid.Column width={8}>
-          <ItemsCruiseProgramModal>
-            <Button primary fluid icon>
-              <Icon name="plus" /> Create
+    <>
+      <List relaxed divided style={{ marginBottom: 0 }}>
+        <ItemsSearchBar plural="Cruises/Programs" sortable />
+        <Grid style={{ marginBottom: 0 }} columns={2}>
+          <Grid.Column>
+            <ItemsCruiseProgramModal>
+              <Button
+                primary
+                fluid
+                icon
+                disabled={!login || !login._permissions?.includes('edit_items')}
+              >
+                <Icon name="plus" /> Create
+              </Button>
+            </ItemsCruiseProgramModal>
+          </Grid.Column>
+          <Grid.Column>
+            <Button primary icon fluid disabled>
+              <Icon name="file excel" /> Export
             </Button>
-          </ItemsCruiseProgramModal>
-        </Grid.Column>
-        <Grid.Column width={8}>
-          <Button primary icon fluid>
-            <Icon name="file excel" /> Export
-          </Button>
-        </Grid.Column>
-      </Grid>
-      {_.keys(cruises).map((key) => (
-        <ItemsCruiseProgramModal uuID={key} key={key}>
-          <List.Item as="a">
-            <b>
-              <OSUID uuIDs={{ cruise: key }} />
-            </b>{' '}
-            {cruises[key].name}
-          </List.Item>
-        </ItemsCruiseProgramModal>
-      ))}
-    </List>
+          </Grid.Column>
+        </Grid>
+        <List.Item>
+          <List.Content floated="left">
+            <Icon.Group size="big">
+              <Icon
+                name={cruiseIcon}
+                style={{ padding: 0, minWidth: '2.5rem' }}
+              />
+            </Icon.Group>
+          </List.Content>
+          <List.Content style={{ marginLeft: '3.75rem' }}>
+            <h3 style={{ margin: 0 }}>
+              <ItemsCount
+                type="cruise"
+                singular="Cruise/Program"
+                plural="Cruises/Programs"
+              />
+            </h3>
+            <List.Description style={{ marginTop: '.5rem' }}>
+              <ItemFilterLabels type="cruise" />
+            </List.Description>
+          </List.Content>
+        </List.Item>
+      </List>
+      {[...Array(Math.max(1, Math.ceil((itemsCount || 1) / 10))).keys()].map(
+        (i) => (
+          <ItemsRowsBlock
+            type="cruise"
+            key={i}
+            minRowHeight={50}
+            from={i * 10}
+            size={10}
+            itemRow={(hit) => (
+              <ItemsCruiseProgramModal
+                uuid={hit._source._uuid}
+                key={hit._source._uuid}
+              >
+                <List.Item as="a" style={{ minHeight: 50 }}>
+                  <ItemsItemRow
+                    item={hit._source}
+                    matches={hit.highlight}
+                    title={hit._source._osuid}
+                    labels={[
+                      { value: hit._source.name, detail: '' },
+                      {
+                        value: hit._source.rvName,
+                        detail: '',
+                      },
+                    ]}
+                  />
+                </List.Item>
+              </ItemsCruiseProgramModal>
+            )}
+          />
+        )
+      )}
+    </>
   );
 };
 

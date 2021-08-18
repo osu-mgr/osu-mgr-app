@@ -1,67 +1,57 @@
-import _ from 'lodash';
-import React, { FunctionComponent, useState, useEffect } from 'react';
-import { List, Input, Grid, Button, Icon, Label } from 'semantic-ui-react';
+import React, { FunctionComponent } from 'react';
 import { useRecoilValue } from 'recoil';
+import { List, Grid, Button, Icon, SemanticICONS } from 'semantic-ui-react';
 import ListItemHistoryPushLink from './list.item.history-push.link';
+import ItemsSearchBar from './items.search-bar';
+import ItemFilterLabels from './items.filter-labels';
 import ItemsImportModal from './items.import.modal';
+import ItemsCount from './items.count';
 import {
-  cruisesState,
+  loginState,
+  DocType,
   cruiseIcon,
-  coresState,
   coreIcon,
-  sectionsState,
   sectionIcon,
-  sectionHalvesState,
   sectionHalfIcon,
-  sectionSamplesState,
   sectionSampleIcon,
-  divesState,
   diveIcon,
-  diveSamplesState,
   diveSampleIcon,
-  diveSubsamplesState,
   diveSubsampleIcon,
 } from '../stores/items';
-import { countByType } from '../es';
 
-const countEffect = (val, set, type) => {
-  useEffect(() => {
-    if (val === undefined) {
-      (async () => {
-        set(await countByType(type));
-      })();
-    }
-  });
-}
+const ListItemCounts: FunctionComponent<{
+  icon: SemanticICONS;
+  type: DocType;
+  singular: string;
+  plural: string;
+  disabled?: boolean;
+}> = ({ icon, type, singular, plural, disabled }) => {
+  return (
+    <ListItemHistoryPushLink
+      path={plural}
+      title={<ItemsCount type={type} singular={singular} plural={plural} />}
+      icon={icon}
+      disabled={disabled}
+    >
+      <ItemFilterLabels type={type} />
+    </ListItemHistoryPushLink>
+  );
+};
 
 const ItemsPage: FunctionComponent = () => {
-  const cruises = useRecoilValue(cruisesState);
-  const cores = useRecoilValue(coresState);
-  const sections = useRecoilValue(sectionsState);
-  const sectionHalves = useRecoilValue(sectionHalvesState);
-  const sectionSamples = useRecoilValue(sectionSamplesState);
-  const dives = useRecoilValue(divesState);
-  const diveSamples = useRecoilValue(diveSamplesState);
-  const diveSubsamples = useRecoilValue(diveSubsamplesState);
-  const [cruisesCount, setCruisesCount] = useState<number | undefined>(
-    undefined
-  );
-  countEffect(cruisesCount, setCruisesCount, 'cruise');
-
-  console.log('cruises', cruises);
+  const login = useRecoilValue(loginState);
   return (
     <List relaxed divided>
-      <Input
-        fluid
-        icon="search"
-        iconPosition="left"
-        placeholder="Search Items ..."
-        style={{ margin: '1rem 0' }}
-      />
-      <Grid style={{ marginBottom: '.5rem' }}>
+      <ItemsSearchBar plural="Items" />
+      <Grid style={{ marginBottom: 0 }}>
         <Grid.Column width={8}>
           <ItemsImportModal>
-            <Button primary icon fluid>
+            <Button
+              primary
+              icon
+              fluid
+              disabled={!login || !login._permissions?.includes('import_items')}
+            >
               <Icon.Group>
                 <Icon name="file excel outline" />
                 <Icon corner name="chevron circle up" />
@@ -71,7 +61,7 @@ const ItemsPage: FunctionComponent = () => {
           </ItemsImportModal>
         </Grid.Column>
         <Grid.Column width={8}>
-          <Button primary icon fluid>
+          <Button primary icon fluid disabled>
             <Icon.Group>
               <Icon name="file excel outline" />
               <Icon corner name="chevron circle down" />
@@ -80,280 +70,74 @@ const ItemsPage: FunctionComponent = () => {
           </Button>
         </Grid.Column>
       </Grid>
-      <ListItemHistoryPushLink
-        path="Cruises/Programs"
-        title={`${
-          cruisesCount === undefined ? '? ' : `${cruisesCount} `
-        }Cruises/Programs`}
+      <List.Item>
+        <List.Content floated="left">
+          <Icon.Group size="big">
+            <Icon
+              name="list layout"
+              style={{ padding: 0, minWidth: '2.5rem' }}
+            />
+          </Icon.Group>
+        </List.Content>
+        <List.Content style={{ marginLeft: '3.75rem' }}>
+          <h3 style={{ margin: 0 }}>
+            <ItemsCount singular="Item" plural="Items" />
+          </h3>
+          <List.Description style={{ marginTop: '.5rem' }}>
+            <ItemFilterLabels />
+          </List.Description>
+        </List.Content>
+      </List.Item>
+      <ListItemCounts
         icon={cruiseIcon}
-      >
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(cruises).length} Recent Change
-          {_.keys(cruises).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(cruises).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink path="Cores" title="Cores" icon={coreIcon}>
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(cores).length} Recent Change
-          {_.keys(cores).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(cores).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink
-        path="Sections"
-        title="Sections"
+        type="cruise"
+        singular="Cruise/Program"
+        plural="Cruises/Programs"
+      />
+      <ListItemCounts
+        icon={coreIcon}
+        type="core"
+        singular="Core"
+        plural="Cores"
+      />
+      <ListItemCounts
         icon={sectionIcon}
-      >
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(sections).length} Recent Change
-          {_.keys(sections).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(sections).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink
-        path="Section Halves"
-        title="Section Halves"
+        type="section"
+        singular="Section"
+        plural="Sections"
+      />
+      <ListItemCounts
         icon={sectionHalfIcon}
-      >
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(sectionHalves).length} Recent Change
-          {_.keys(sectionHalves).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(sectionHalves).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink
-        path="Section Samples"
-        title="Section Samples"
+        type="sectionHalf"
+        singular="Section Half"
+        plural="Section Halves"
+      />
+      <ListItemCounts
         icon={sectionSampleIcon}
-      >
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(sectionSamples).length} Recent Change
-          {_.keys(sectionSamples).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(sectionSamples).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink path="Dives" title="Dives" icon={diveIcon}>
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(dives).length} Recent Change
-          {_.keys(dives).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(dives).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink
-        path="Dive Samples"
-        title="Dive Samples"
+        type="sectionSample"
+        singular="Section Sample"
+        plural="Section Samples"
+        disabled
+      />
+      <ListItemCounts
+        icon={diveIcon}
+        type="dive"
+        singular="Dive"
+        plural="Dives"
+      />
+      <ListItemCounts
         icon={diveSampleIcon}
-      >
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(diveSamples).length} Recent Change
-          {_.keys(diveSamples).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(diveSamples).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink
-        path="Dive Subsamples"
-        title="Dive Subsamples"
+        type="diveSample"
+        singular="Dive Sample"
+        plural="Dive Samples"
+      />
+      <ListItemCounts
         icon={diveSubsampleIcon}
-      >
-        <Label
-          size="tiny"
-          style={{ color: 'rgba(0, 0, 0, 0.75)', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="add circle" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
-          {_.keys(diveSubsamples).length} Recent Change
-          {_.keys(cruises).length !== 1 && 's'}
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#2C662D', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="check circle" style={{ color: '#2C662D' }} />
-          {_.keys(diveSubsamples).length} Valid
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#F2711C', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
-          {0} Warnings
-        </Label>
-        <Label
-          size="tiny"
-          style={{ color: '#9F3A38', margin: '0 .5rem .5rem 0' }}
-        >
-          <Icon name="times circle" style={{ color: '#9F3A38' }} />
-          {0} Errors
-        </Label>
-      </ListItemHistoryPushLink>
+        type="diveSubsample"
+        singular="Dive Subsample"
+        plural="Dive Subsamples"
+        disabled
+      />
     </List>
   );
 };

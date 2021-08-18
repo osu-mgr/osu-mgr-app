@@ -2,12 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { List, Breadcrumb, Divider } from 'semantic-ui-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { historyState } from '../stores/history';
-import { accountsState, loginState } from '../stores/accounts';
+import { loginState } from '../stores/items';
+import LogInModal from './log-in.modal';
 import AccountModal from './account.modal';
 
 const Header: FunctionComponent = () => {
   const [history, setHistory] = useRecoilState(historyState);
-  const accounts = useRecoilValue(accountsState);
   const login = useRecoilValue(loginState);
   const locations = history.locations.slice(0, history.index + 1);
   const sections = locations.map((location, index) => {
@@ -33,11 +33,22 @@ const Header: FunctionComponent = () => {
         <List.Item>
           <Breadcrumb icon="right angle" sections={sections} />
         </List.Item>
-        <AccountModal>
-          <List.Item as="a" style={{ float: 'right' }}>
-            <List.Icon name="user" /> {accounts[login].name}
-          </List.Item>
-        </AccountModal>
+        {!login._uuid && (
+          <LogInModal>
+            <List.Item as="a" style={{ float: 'right' }}>
+              <List.Icon name="key" />
+              Log In
+            </List.Item>
+          </LogInModal>
+        )}
+        {login._uuid && (
+          <AccountModal>
+            <List.Item as="a" style={{ float: 'right' }}>
+              <List.Icon name="user" />
+              {login.name}
+            </List.Item>
+          </AccountModal>
+        )}
       </List>
       <Divider
         fitted

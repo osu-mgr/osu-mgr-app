@@ -1,7 +1,7 @@
 {
   "name": "osu-mgr-app",
   "productName": "OSU-MGR App",
-  "version": "3.0.0-alpha.6",
+  "version": "3.0.0-beta.2",
   "description": "OSU-MGR App",
   "author": "Rupert Minnett",
   "scripts": {
@@ -10,7 +10,7 @@
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.renderer.prod.babel.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
-    "package": "rm -rf src/dist && npm run  build && electron-builder build --publish never",
+    "package": "npm run build && electron-builder build --publish never",
     "postinstall": "node -r @babel/register .erb/scripts/CheckNativeDep.js && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && npm run  start:renderer",
     "start:main": "cross-env NODE_ENV=development electron -r ./.erb/scripts/BabelRegister ./src/main.dev.ts",
@@ -224,6 +224,10 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.13.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/react-fontawesome": "^0.1.14",
+    "axios": "^0.21.1",
     "deep-diff": "^1.0.2",
     "dot-env": "^0.0.1",
     "electron-debug": "^3.2.0",
@@ -235,6 +239,8 @@
     "numeral": "^2.0.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-fontawesome": "^1.7.1",
+    "react-hook-inview": "^4.3.10",
     "react-router-dom": "^5.2.0",
     "react-swipeable-views": "^0.14.0",
     "recoil": "^0.3.1",

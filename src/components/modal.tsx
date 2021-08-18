@@ -10,10 +10,11 @@ import {
   TransitionablePortal,
   Segment,
   Dimmer,
-  Button,
   Icon,
   StrictIconProps,
   Loader,
+  Form,
+  Button,
 } from 'semantic-ui-react';
 import { atom, useRecoilState } from 'recoil';
 
@@ -24,7 +25,7 @@ export const modalsState = atom({
 
 const Modal: FunctionComponent<{
   trigger: ReactNode;
-  buttons(close?: () => void): ReactNode;
+  buttons(close: () => void): ReactNode;
   title: string;
   icon: StrictIconProps['name'];
   cornerIcon?: StrictIconProps['name'];
@@ -57,57 +58,67 @@ const Modal: FunctionComponent<{
       <TransitionablePortal
         open={modalIdx >= 0}
         onOpen={onOpen}
-        onClose={onClose}
+        onClose={() => {
+          close();
+          if (onClose) onClose();
+        }}
         transition={{ animation: 'fade down', duration: 300 }}
         closeOnDocumentClick={false}
       >
         <Dimmer inverted page active>
-          <Segment.Group
-            raised
-            style={{
-              color: 'rgba(0, 0, 0, 0.87)',
-              width: 'calc(100vw - 3rem)',
-              position: 'fixed',
-              top: `${1.5 + modalIdx * 2}rem`,
-              left: '1.5rem',
-            }}
-          >
-            <Segment>
-              <Icon
-                link
-                name="close"
-                size="large"
-                style={{ float: 'right' }}
-                onClick={close}
-              />
-              <h3 style={{ margin: 0 }}>
-                <Icon.Group>
-                  <Icon name={icon} />
-                  {cornerIcon && <Icon corner name={cornerIcon} />}
-                </Icon.Group>{' '}
-                {title}
-              </h3>
-            </Segment>
-            <Segment
-              textAlign="left"
+          <Form>
+            <Segment.Group
+              raised
               style={{
-                overflowY: loading ? 'hidden' : 'scroll',
-                minHeight: `calc(100vh - ${11 + modalIdx * 2}rem)`,
-                maxHeight: `calc(100vh - ${11 + modalIdx * 2}rem)`,
+                color: 'rgba(0, 0, 0, 0.87)',
+                width: 'calc(100vw - 3rem)',
+                position: 'fixed',
+                top: `${1.5 + modalIdx * 2}rem`,
+                left: '1.5rem',
               }}
             >
-              {children}
-              {loading && (
-                <Dimmer inverted active>
-                  <Loader>{loading}</Loader>
-                </Dimmer>
-              )}
-            </Segment>
-            <Segment textAlign="right">
-              {!hideCancel && <Button onClick={close}>Cancel</Button>}
-              {buttons(close)}
-            </Segment>
-          </Segment.Group>
+              <Segment>
+                <Icon
+                  link
+                  name="close"
+                  size="large"
+                  style={{ float: 'right' }}
+                  onClick={close}
+                />
+                <h3 style={{ margin: 0 }}>
+                  <Icon.Group>
+                    <Icon name={icon} />
+                    {cornerIcon && <Icon corner name={cornerIcon} />}
+                  </Icon.Group>{' '}
+                  {title}
+                </h3>
+              </Segment>
+              <Segment
+                textAlign="left"
+                style={{
+                  overflowY: loading ? 'hidden' : 'scroll',
+                  minHeight: `calc(100vh - ${11 + modalIdx * 2}rem)`,
+                  maxHeight: `calc(100vh - ${11 + modalIdx * 2}rem)`,
+                }}
+              >
+                {children}
+                {loading && (
+                  <Dimmer inverted active>
+                    <Loader>{loading}</Loader>
+                  </Dimmer>
+                )}
+              </Segment>
+              <Segment textAlign="right">
+                {buttons(close)}
+                {!hideCancel && (
+                  <Button onClick={close}>
+                    <Icon name="close" />
+                    Cancel
+                  </Button>
+                )}
+              </Segment>
+            </Segment.Group>
+          </Form>
         </Dimmer>
       </TransitionablePortal>
     </>

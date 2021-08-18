@@ -25,5 +25,9 @@
     "yarn.lock": true,
     "*.{css,sass,scss}.d.ts": true
   },
-  "npm.packageManager": "yarn"
+  "npm.packageManager": "yarn",
+  "restructuredtext.languageServer.disabled": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true
 }

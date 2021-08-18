@@ -38,6 +38,7 @@ src/renderer.prod.js
 src/renderer.prod.js.map
 src/style.css
 src/style.css.map
+.env
 dist
 dll
 main.js

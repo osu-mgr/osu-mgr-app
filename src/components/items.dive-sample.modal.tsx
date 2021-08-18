@@ -1,14 +1,64 @@
-import React, { FunctionComponent } from 'react';
-import { Button, ButtonGroup, Icon, Form } from 'semantic-ui-react';
-import FormGridColumns from './form.grid.columns';
+import _ from 'lodash';
+import numeral from 'numeral';
+import React, { FunctionComponent, useState, useEffect } from 'react';
+import { useRecoilValue } from 'recoil';
+import { Button, Icon, Form } from 'semantic-ui-react';
 import Modal from './modal';
+import FormGridColumns from './form.grid.columns';
+// eslint-disable-next-line import/no-cycle
 import ItemsCruiseProgramModal from './items.cruise-program.modal';
-import ItemsCoreModal from './items.core.modal';
-import { diveSampleIcon } from '../stores/items';
+// eslint-disable-next-line import/no-cycle
+import ItemsSectionModal from './items.section.modal';
+import { itemByUUID, countByUUIDs } from '../es';
+import OSUID from './osu.id';
+import {
+  loginState,
+  DiveSample,
+  diveSampleIcon,
+  diveTypes,
+} from '../stores/items';
+import ItemsChildrenBlock from './items.item-children-block';
+import ItemsFormSelect from './items.form.select';
+import GridButtonIcon from './grid.button.icon';
+import ItemsFormInput from './items.form.input';
+import ItemsPrintLabelsModal from './items.print-labels.modal';
 
-const ItemsDiveModal: FunctionComponent<{
-  uuID?: string;
-}> = ({ children, uuID }) => {
+const ItemsDiveSampleModal: FunctionComponent<{
+  uuid?: string;
+}> = ({ children, uuid }) => {
+  const login = useRecoilValue(loginState);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [diveSample, setDiveSample] = useState<DiveSample | undefined>(
+    undefined
+  );
+  const [diveSubsampleCount, setDiveSubsampleCount] = useState<
+    number | undefined
+  >(undefined);
+  useEffect(() => {
+    setDiveSample(undefined);
+  }, [uuid]);
+  useEffect(() => {
+    if (isOpen && uuid !== undefined)
+      (async () => {
+        setDiveSample((await itemByUUID(uuid)) as DiveSample);
+      })();
+  }, [uuid, isOpen]);
+  useEffect(() => {
+    if (
+      isOpen &&
+      uuid !== undefined &&
+      diveSample !== undefined &&
+      diveSample._diveSampleUUID !== undefined
+    )
+      (async () => {
+        setDiveSubsampleCount(
+          await countByUUIDs(
+            [diveSample._diveSampleUUID || ''],
+            'diveSubsample'
+          )
+        );
+      })();
+  }, [uuid, isOpen, diveSample]);
   return (
     <Modal
       trigger={children}
@@ -21,163 +71,155 @@ const ItemsDiveModal: FunctionComponent<{
           </Button>
         </>
       )}
+      onOpen={() => setIsOpen(true)}
+      onClose={() => setIsOpen(false)}
     >
-      <Form>
+      <>
         <FormGridColumns widths={[14, 2]}>
-          <Form.Select
-            fluid
+          <ItemsFormSelect
             search
             selection
-            label="Cruise/Program"
+            label="Dive"
             placeholder="Required"
-            error
+            error={!diveSample?._diveUUID}
+            value={diveSample?._diveUUID || ''}
+            type="dive"
             options={[]}
           />
           <ItemsCruiseProgramModal>
-            <Button primary fluid icon style={{ marginBottom: 2 }}>
-              <Icon name="plus" />
-            </Button>
+            <GridButtonIcon icon="plus" />
           </ItemsCruiseProgramModal>
         </FormGridColumns>
-        <Form.Field
-          label="Deployment/Dive Type"
-          control={() => (
-            <ButtonGroup fluid>
-              <Button primary>Deployment</Button>
-              <Button>Dive</Button>
-            </ButtonGroup>
-          )}
+        <ItemsFormInput
+          fluid
+          label="Dive Sample ID"
+          placeholder="Required"
+          error={diveSample?.id === ''}
+          value={diveSample?.id || ''}
         />
         <Form.Input
           fluid
-          label="Deployment/Dive ID"
-          placeholder="Required"
-          error
+          readOnly
+          label="OSU ID (Calculated)"
+          value={diveSample?._osuid}
         />
-        <Form.Input fluid label="OSU ID" placeholder="Calculated" />
-        <Form.Input fluid label="Deployment/Dive Notes" />
-        <Form.Select
-          fluid
-          search
-          selection
-          allowAdditions
-          label="Material"
-          options={[]}
-          placeholder="Required"
-          error
-        />
-        <Form.Select
-          fluid
-          search
-          selection
-          allowAdditions
-          label="Recovery Method"
-          options={[]}
-          placeholder="Required"
-          error
-        />
-        <FormGridColumns widths={[10, 6]}>
-          <Form.Input
+        <ItemsFormInput label="IGSN" value={diveSample?.igsn} />
+        <FormGridColumns widths={[8, 8]}>
+          <ItemsFormInput
             fluid
-            label="Collection Start Date"
-            placeholder="Required"
-            error
+            label="Start Date"
+            value={diveSample?.startDate || ''}
           />
-          <Form.Input fluid label="Local Time" placeholder="Required" error />
-        </FormGridColumns>
-        <FormGridColumns widths={[10, 6]}>
-          <Form.Input fluid label="Collection End Date" />
-          <Form.Input fluid label="Local Time" />
-        </FormGridColumns>
-        <FormGridColumns widths={[8, 8]}>
-          <>
-            <Form.Input
-              fluid
-              label="Start Latitude"
-              placeholder="Required"
-              error
-            />
-            <Form.Input fluid label="End Latitude" />
-            <Form.Input
-              fluid
-              label="Start Longitude"
-              placeholder="Required"
-              error
-            />
-            <Form.Input fluid label="End Longitude" />
-          </>
-          <></>
-        </FormGridColumns>
-        <FormGridColumns widths={[8, 8]}>
-          <Form.Input
+          <ItemsFormInput
             fluid
-            label="Start Water Depth (mbsl)"
-            placeholder="Required"
-            error
+            label="End Date"
+            value={diveSample?.endDate || ''}
           />
-          <Form.Input fluid label="End Water Depth (mbsl)" />
         </FormGridColumns>
         <FormGridColumns widths={[8, 8]}>
-          <Form.Input fluid label="Area" />
-          <Form.Input fluid label="Place" />
+          <ItemsFormInput
+            fluid
+            label="Start Time"
+            value={diveSample?.startTime || ''}
+          />
+          <ItemsFormInput
+            fluid
+            label="End Time"
+            value={diveSample?.endTime || ''}
+          />
         </FormGridColumns>
-        <Form.Select
-          fluid
-          search
-          selection
-          allowAdditions
-          label="Contact PI Name"
-          options={[]}
-          placeholder="Required"
-          error
-        />
-        <Form.Select
-          fluid
-          search
-          selection
-          allowAdditions
-          label="Contact PI Institution"
-          options={[]}
-          placeholder="Required"
-          error
-        />
-        <Form.Input
-          fluid
-          label="Contact PI Email"
-          placeholder="Required"
-          error
-        />
+        <FormGridColumns widths={[8, 8]}>
+          <ItemsFormInput
+            fluid
+            label="Start Latitude"
+            value={diveSample?.latitudeStart || ''}
+          />
+          <ItemsFormInput
+            fluid
+            label="End Latitude"
+            value={diveSample?.latitudeEnd || ''}
+          />
+        </FormGridColumns>
+        <FormGridColumns widths={[8, 8]}>
+          <ItemsFormInput
+            fluid
+            label="Start Longitude"
+            value={diveSample?.longitudeStart || ''}
+          />
+          <ItemsFormInput
+            fluid
+            label="End Longitude"
+            value={diveSample?.longitudeEnd || ''}
+          />
+        </FormGridColumns>
+        <FormGridColumns widths={[8, 8]}>
+          <ItemsFormInput
+            fluid
+            label="Start Water Depth (mbsf)"
+            value={diveSample?.waterDepthStart || ''}
+          />
+          <ItemsFormInput
+            fluid
+            label="End Water Depth (mbsf)"
+            value={diveSample?.waterDepthEnd || ''}
+          />
+        </FormGridColumns>
+        <Form.Field style={{ marginBottom: 0 }}>
+          <label>
+            {(diveSubsampleCount &&
+              `${numeral(diveSubsampleCount).format('0,0')} `) ||
+              ''}
+            Dive Subsample{diveSubsampleCount === 1 ? '' : 's'}
+          </label>
+        </Form.Field>
+        {[
+          ...Array(
+            Math.max(1, Math.ceil((diveSubsampleCount || 1) / 10))
+          ).keys(),
+        ].map((i) => (
+          <ItemsChildrenBlock
+            key={i}
+            uuid={diveSample?._diveSampleUUID || ''}
+            type="diveSample"
+            from={i * 10}
+            size={10}
+            minRowHeight={30}
+            itemRow={(item) => (
+              <FormGridColumns key={item._uuid} widths={[2, 12, 2]}>
+                <ItemsSectionModal uuid={item._uuid}>
+                  <Button primary fluid icon style={{ marginBottom: 2 }}>
+                    <Icon name="edit" />
+                  </Button>
+                </ItemsSectionModal>
+                <Form.Input fluid readOnly value={item._osuid} />
+                <Button primary fluid icon style={{ marginBottom: 2 }}>
+                  <Icon name="delete" />
+                </Button>
+              </FormGridColumns>
+            )}
+          />
+        ))}
         <FormGridColumns widths={[14, 2]}>
           <Form.Select
             fluid
             multiple
             search
-            selection
-            label="Cores"
-            options={[]}
-          />
-          <ItemsCoreModal>
-            <Button primary fluid icon style={{ marginBottom: 2 }}>
-              <Icon name="plus" />
-            </Button>
-          </ItemsCoreModal>
-        </FormGridColumns>
-        <FormGridColumns widths={[14, 2]}>
-          <Form.Select
-            fluid
-            multiple
-            search
-            selection
-            label="Rocks"
-            options={[]}
+            renderLabel={({ value }) => `${value}`}
+            options={_.keys({}).map((x) => {
+              return {
+                key: x,
+                value: x,
+                text: <OSUID uuIDs={{ section: x }} />,
+              };
+            })}
           />
           <Button primary fluid icon style={{ marginBottom: 2 }}>
             <Icon name="plus" />
           </Button>
         </FormGridColumns>
-      </Form>
+      </>
     </Modal>
   );
 };
 
-export default ItemsDiveModal;
+export default ItemsDiveSampleModal;

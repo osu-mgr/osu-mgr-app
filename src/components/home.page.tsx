@@ -16,23 +16,34 @@ const HomePage: FunctionComponent = () => {
         }}
       />
       <ListItemHistoryPushLink path="Items" title="Items" icon="list layout">
-        Description
+        Manage Repository Cruises/Programs to Subsamples
       </ListItemHistoryPushLink>
       <ListItemHistoryPushLink
         path="Sample Requests"
         title="Sample Requests"
         icon="clipboard list"
+        disabled
       >
-        Description
+        Manage Sample Requests
       </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink path="Storage" title="Storage" icon="warehouse">
-        Description
+      <ListItemHistoryPushLink
+        path="Storage"
+        title="Storage"
+        icon="warehouse"
+        disabled
+      >
+        Explore Physical Locations of Repository Items
       </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink path="Moves" title="Moves" icon="truck">
-        Description
+      <ListItemHistoryPushLink path="Moves" title="Moves" icon="truck" disabled>
+        Coordinate Item Movement Outside Repository
       </ListItemHistoryPushLink>
-      <ListItemHistoryPushLink path="Reports" title="Reports" icon="chart pie">
-        Description
+      <ListItemHistoryPushLink
+        path="Reports"
+        title="Reports"
+        icon="chart pie"
+        disabled
+      >
+        View Repository Reports
       </ListItemHistoryPushLink>
     </List>
   );

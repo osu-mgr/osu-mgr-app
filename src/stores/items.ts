@@ -1,7 +1,44 @@
 import { Diff } from 'deep-diff';
 import { atom } from 'recoil';
 
+export type ItemsSearch = {
+  searchString: string;
+  sortOrder:
+    | 'ids asc'
+    | 'ids desc'
+    | 'modified asc'
+    | 'modified desc'
+    | 'alpha asc'
+    | 'alpha desc';
+  filter?: 'recent' | 'valid' | 'warning' | 'error';
+  tap: number;
+};
+const itemsSearchDefault: ItemsSearch = {
+  searchString: '',
+  sortOrder: 'ids asc',
+  tap: 1,
+};
+export const itemsSearchState = atom({
+  key: 'search',
+  default: itemsSearchDefault,
+});
+
+export type Account = {
+  _docType?: 'account';
+  _uuid?: string;
+  name?: string;
+  _pin?: string;
+  _permissions?: string[];
+  _history?: { datetime: string }[];
+};
+const accountDefault: Account = {};
+export const loginState = atom({
+  key: 'login',
+  default: accountDefault,
+});
+
 export type DocType =
+  | 'account'
   | 'cruise'
   | 'core'
   | 'section'
@@ -12,6 +49,7 @@ export type DocType =
   | 'diveSubsample';
 
 export const docTypesHierarchy: Record<DocType, DocType[]> = {
+  account: [],
   cruise: ['core', 'dive'],
   core: ['section'],
   section: ['sectionHalf'],
@@ -30,6 +68,14 @@ export const sectionSampleIcon = 'cube';
 export const diveIcon = 'shopping basket';
 export const diveSampleIcon = 'cube';
 export const diveSubsampleIcon = 'cubes';
+
+export const accountPermissions = {
+  edit_accounts: 'Edit Accounts',
+  edit_items: 'Edit Items',
+  import_items: 'Import Items',
+  edit_storage: 'Edit Storage',
+  print_labels: 'Print Labels',
+};
 
 export const coreTypes = {
   'Box Core': 'BC',
@@ -60,6 +106,55 @@ export const sectionHalfTypes = {
   Round: 'R',
 };
 
+export const collections = {
+  mgg: 'MGG',
+  noaa: 'NOAA',
+  acc: 'ACC',
+};
+
+export const matchesFieldNames = {
+  '_osuid.substring': 'OSU ID',
+  '_errors.substring': 'Error',
+  '_warnings.substring': 'Warning',
+  'alternateName.substring': 'Alternate Name',
+  'area.substring': 'Area',
+  'collection.substring': 'Collection',
+  'core.substring': 'Core',
+  'cruise.substring': 'Cruise',
+  'depthBottom.substring': 'Depth Bottom (cm)',
+  'depthTop.substring': 'Depth Top (cm)',
+  'diameter.substring': 'Diameter (cm)',
+  'dive.substring': 'Dive',
+  'endDate.substring': 'Date End',
+  'endTime.substring': 'Time End',
+  'id.substring': 'ID',
+  'igsn.substring': 'IGSN',
+  'latitudeEnd.substring': 'Latitude End',
+  'latitudeStart.substring': 'Latitude Start',
+  'length.substring': 'Length cm',
+  'longitudeEnd.substring': 'Longitude End',
+  'longitudeStart.substring': 'Longitude Start',
+  'material.substring': 'Material',
+  'method.substring': 'Method',
+  'name.substring': 'Name',
+  'notes.substring': 'Notes',
+  'pi.substring': 'PI',
+  'piEmail.substring': 'PI Email',
+  'piInstitution.substring': 'PI Institution',
+  'place.substring': 'Place',
+  'rvName.substring': 'RV Name',
+  'r2rCruiseID.substring': 'R2R Cruise ID',
+  'sample.substring': 'Sample',
+  'section.substring': 'Section',
+  'startDate.substring': 'Date Start',
+  'startTime.substring': 'Time Start',
+  'texture.substring': 'Texture',
+  'type.substring': 'Type',
+  'waterDepthEnd.substring': 'Water Depth End (mbsl)',
+  'waterDepthStart.substring': 'Water Depth Start (mbsl)',
+  'weight.substring': 'Weight (kg)',
+};
+
 interface ItemHistory {
   login: string;
   datetime: string;
@@ -68,7 +163,7 @@ interface ItemHistory {
 
 interface ItemMetadata {
   _uuid: string;
-  _igsn: string;
+  _osuid: string;
   _cruiseUUID?: string;
   _coreUUID?: string;
   _sectionUUID?: string;
@@ -77,14 +172,27 @@ interface ItemMetadata {
   _diveUUID?: string;
   _diveSampleUUID?: string;
   _diveSubsampleUUID?: string;
+  _cruiseID?: string;
+  _coreNumber?: number;
+  _sectionNumber?: number;
+  _diveNumber?: number;
+  _diveSampleNumber?: number;
+  _errors?: string[];
+  _warnings?: string[];
+  igsn?: string;
+  notes?: string;
 }
 export interface CruiseData {
   id?: string;
   name?: string;
   rvName?: string;
-  // TODO: collection?: 'mgg' | 'noaa' | 'acc'
-  // TODO: r2rID?: string
+  pi?: string;
+  piInstitution?: string;
+  piEmail?: string;
+  collection?: 'mgg' | 'noaa' | 'acc';
+  r2rCruiseID?: string;
 }
+
 export interface CruiseHistory extends ItemHistory {
   snapshot?: CruiseData;
   diff?: Diff<CruiseData, CruiseData>[];
@@ -111,10 +219,6 @@ interface DeploymentData {
   method?: string;
   area?: string;
   place?: string;
-  notes?: string;
-  pi?: string;
-  piInstitution?: string;
-  piEmail?: string;
 }
 
 export interface CoreData extends DeploymentData {
@@ -130,6 +234,7 @@ export interface CoreData extends DeploymentData {
   waterDepthEnd?: string;
   diameter?: string;
   length?: string;
+  nSections?: string;
 }
 export interface CoreHistory extends ItemHistory {
   snapshot?: CoreData;
@@ -201,6 +306,9 @@ export const modifiedSectionHalvesState = atom({
 export interface SectionSampleData {
   id?: string;
   sectionHalf?: string;
+  pi?: string;
+  piInstitution?: string;
+  piEmail?: string;
 }
 export interface SectionSampleHistory extends ItemHistory {
   snapshot?: SectionSampleData;
@@ -290,6 +398,9 @@ export const modifiedDiveSamplesState = atom({
 
 export interface DiveSubsampleData extends DiveSampleSubsampleData {
   sample?: string;
+  pi?: string;
+  piInstitution?: string;
+  piEmail?: string;
 }
 export interface DiveSubsampleHistory extends ItemHistory {
   snapshot?: DiveSubsampleData;
@@ -333,6 +444,7 @@ export type ItemData =
   | undefined;
 
 export type Items =
+  | typeof accountDefault
   | typeof cruisesDefault
   | typeof coresDefault
   | typeof sectionsDefault

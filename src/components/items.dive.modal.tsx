@@ -1,219 +1,59 @@
 import _ from 'lodash';
-import React, { FunctionComponent, useState } from 'react';
-import {
-  Button,
-  ButtonGroup,
-  Icon,
-  Form,
-  Dimmer,
-  Loader,
-} from 'semantic-ui-react';
+import numeral from 'numeral';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
-import FormGridColumns from './form.grid.columns';
+import { Button, Icon, Form } from 'semantic-ui-react';
 import Modal from './modal';
+import FormGridColumns from './form.grid.columns';
 // eslint-disable-next-line import/no-cycle
 import ItemsCruiseProgramModal from './items.cruise-program.modal';
-// import ItemsDiveSampleModal from './items.dive-sample.modal';
-import OSUID, { calculatedOSUID } from './osu.id';
-import {
-  Cruise,
-  cruisesState,
-  divesState,
-  diveIcon,
-  Dive,
-  diveSamplesState,
-} from '../stores/items';
-
-const ItemsDiveModalContent: FunctionComponent<{
-  uuID?: string;
-}> = ({ uuID }) => {
-  const cruises = useRecoilValue(cruisesState);
-  const dives = useRecoilValue(divesState);
-  const diveSamples = useRecoilValue(diveSamplesState);
-  const dive: Dive | undefined = (uuID && dives[uuID]) || undefined;
-  const cruiseUUID: string | undefined =
-    uuID && dives[uuID] && dives[uuID]._cruiseUUID;
-  const cruise: Cruise | undefined =
-    (cruiseUUID && cruises[cruiseUUID]) || undefined;
-  console.log('dive', dive);
-  return (
-    <Form>
-      <FormGridColumns widths={[2, 12, 2]}>
-        <ItemsCruiseProgramModal uuID={cruiseUUID}>
-          <Button
-            primary
-            fluid
-            icon
-            style={{ marginBottom: 2 }}
-            disabled={!cruiseUUID}
-          >
-            <Icon name="edit" />
-          </Button>
-        </ItemsCruiseProgramModal>
-        <Form.Select
-          fluid
-          search
-          selection
-          label="Cruise/Program"
-          placeholder="Required"
-          error={!dive?.cruise}
-          value={dive?.cruise || ''}
-          options={_.keys(cruises).map((x) => {
-            return {
-              key: x,
-              value: x,
-              text: <OSUID uuIDs={{ cruise: x }} />,
-            };
-          })}
-        />
-        <ItemsCruiseProgramModal>
-          <Button primary fluid icon style={{ marginBottom: 2 }}>
-            <Icon name="plus" />
-          </Button>
-        </ItemsCruiseProgramModal>
-      </FormGridColumns>
-      <Form.Field
-        label="Dive Type"
-        control={() => (
-          <ButtonGroup fluid>
-            <Button primary={dive?.rov === undefined}>Dredge</Button>
-            <Button primary={dive?.rov !== undefined}>ROV</Button>
-          </ButtonGroup>
-        )}
-      />
-      <Form.Input
-        fluid
-        label="Dive ID"
-        placeholder="Required"
-        error={!dive?.id}
-        value={dive?.id || ''}
-      />
-      <Form.Input
-        fluid
-        label="OSU ID"
-        placeholder="Calculated"
-        value={calculatedOSUID({ cruise, dive })}
-      />
-      <Form.Input fluid label="Dive Notes" value={dive?.notes || ''} />
-      <Form.Select
-        fluid
-        search
-        selection
-        allowAdditions
-        label="Material"
-        options={[]}
-        placeholder="Required"
-        error={!dive?.material}
-        value={dive?.material || ''}
-      />
-      <Form.Select
-        fluid
-        search
-        selection
-        allowAdditions
-        label="Recovery Method"
-        options={[]}
-        placeholder="Required"
-        error={!dive?.method}
-        value={dive?.method || ''}
-      />
-      <FormGridColumns widths={[8, 8]}>
-        <Form.Input fluid label="Area" value={dive?.area || ''} />
-        <Form.Input fluid label="Place" value={dive?.place || ''} />
-      </FormGridColumns>
-      <Form.Select
-        fluid
-        search
-        selection
-        allowAdditions
-        label="Contact PI Name"
-        placeholder="Required"
-        error={!dive?.pi}
-        value={dive?.pi || ''}
-        options={_.keys(
-          _.keys(dives).reduce((pis, x) => {
-            const { pi } = dives[x];
-            if (pi !== undefined) {
-              pis[pi] = true;
-            }
-            return pis;
-          }, {})
-        ).map((x) => {
-          return {
-            key: x,
-            value: x,
-          };
-        })}
-      />
-      <Form.Select
-        fluid
-        search
-        selection
-        allowAdditions
-        label="Contact PI Institution"
-        placeholder="Required"
-        error={!dive?.piInstitution}
-        value={dive?.piInstitution || ''}
-        options={_.keys(
-          _.keys(dives).reduce((piInstitutions, x) => {
-            const { piInstitution } = dives[x];
-            if (piInstitution !== undefined) {
-              piInstitutions[piInstitution] = true;
-            }
-            return piInstitutions;
-          }, {})
-        ).map((x) => {
-          return {
-            key: x,
-            value: x,
-          };
-        })}
-      />
-      <Form.Input fluid label="Contact PI Email" placeholder="Required" error />
-      <Form.Field style={{ marginBottom: 0 }}>
-        <label>Samples</label>
-      </Form.Field>
-      {/* dive?.samples.map(x =>
-					<FormGridColumns key={ x } widths={ [2, 12, 2] }>
-						<ItemsDiveSampleModal>
-							<Button primary fluid icon style={{ marginBottom: 2 }}><Icon name='edit'/></Button>
-						</ItemsDiveSampleModal>
-						<OSUID as='input' uuIDs={{ diveSample: x }}/>
-						<Button primary fluid icon style={{ marginBottom: 2 }}><Icon name='delete'/></Button>
-					</FormGridColumns>
-				) */}
-      <FormGridColumns widths={[14, 2]}>
-        <Form.Select
-          fluid
-          multiple
-          search
-          renderLabel={({ value }) => `${value}`}
-          options={_.keys(diveSamples).map((x) => {
-            return {
-              key: x,
-              value: x,
-              text: <OSUID uuIDs={{ diveSample: x }} />,
-            };
-          })}
-        />
-        <Button primary fluid icon style={{ marginBottom: 2 }}>
-          <Icon name="plus" />
-        </Button>
-      </FormGridColumns>
-    </Form>
-  );
-};
+// eslint-disable-next-line import/no-cycle
+import ItemsDiveSampleModal from './items.dive-sample.modal';
+import { itemByUUID, countByUUIDs } from '../es';
+import OSUID from './osu.id';
+import { loginState, Dive, diveIcon, coreTypes } from '../stores/items';
+import ItemsChildrenBlock from './items.item-children-block';
+import ItemsFormSelect from './items.form.select';
+import GridButtonIcon from './grid.button.icon';
+import ItemsFormInput from './items.form.input';
+import ItemsPrintLabelsModal from './items.print-labels.modal';
 
 const ItemsDiveModal: FunctionComponent<{
-  uuID?: string;
-}> = ({ children, uuID }) => {
-  const [open, setOpen] = useState(false);
+  uuid?: string;
+}> = ({ children, uuid }) => {
+  const login = useRecoilValue(loginState);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [dive, setDive] = useState<Dive | undefined>(undefined);
+  const [diveSamplesCount, setDiveSamplesCount] = useState<number | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    setDive(undefined);
+  }, [uuid]);
+  useEffect(() => {
+    if (isOpen && uuid !== undefined)
+      (async () => {
+        setDive((await itemByUUID(uuid)) as Dive);
+      })();
+  }, [uuid, isOpen]);
+  useEffect(() => {
+    if (
+      isOpen &&
+      uuid !== undefined &&
+      dive !== undefined &&
+      dive._diveUUID !== undefined
+    )
+      (async () => {
+        setDiveSamplesCount(
+          await countByUUIDs([dive._diveUUID || ''], 'diveSample')
+        );
+      })();
+  }, [uuid, isOpen, dive]);
   return (
     <Modal
       trigger={children}
       icon={diveIcon}
       title="Dive"
-      onOpen={() => _.defer(() => setOpen(true))}
       buttons={() => (
         <>
           <Button primary disabled icon>
@@ -221,13 +61,112 @@ const ItemsDiveModal: FunctionComponent<{
           </Button>
         </>
       )}
+      onOpen={() => setIsOpen(true)}
+      onClose={() => setIsOpen(false)}
     >
-      {open && <ItemsDiveModalContent uuID={uuID} />}
-      {!open && (
-        <Dimmer inverted active>
-          <Loader>Loading</Loader>
-        </Dimmer>
-      )}
+      <>
+        <FormGridColumns widths={[14, 2]}>
+          <ItemsFormSelect
+            search
+            selection
+            label="Cruise/Program"
+            placeholder="Required"
+            error={!dive?._cruiseUUID}
+            value={dive?._cruiseUUID || ''}
+            type="cruise"
+            options={[]}
+          />
+          <ItemsCruiseProgramModal>
+            <GridButtonIcon icon="plus" />
+          </ItemsCruiseProgramModal>
+        </FormGridColumns>
+        <FormGridColumns widths={[4, 12]}>
+          <ItemsFormInput
+            fluid
+            label="Dive ID"
+            placeholder="Required"
+            error={dive?.id === ''}
+            value={dive?.id || ''}
+          />
+          <ItemsFormSelect
+            label="Collection Method"
+            placeholder="Required"
+            error={!dive?.method}
+            value={dive?.method || ''}
+            options={_.keys(coreTypes)
+              .sort()
+              .map((x) => ({
+                key: coreTypes[x],
+                value: x,
+                text: x,
+              }))}
+          />
+        </FormGridColumns>
+        <Form.Input
+          fluid
+          readOnly
+          label="OSU ID (Calculated)"
+          value={dive?._osuid}
+        />
+        <ItemsFormInput label="IGSN" value={dive?.igsn} />
+        <ItemsFormInput label="ROV Name" value={dive?.rov} />
+        <FormGridColumns widths={[8, 8]}>
+          <ItemsFormInput fluid label="Area" value={dive?.area || ''} />
+          <ItemsFormInput fluid label="Place" value={dive?.place || ''} />
+        </FormGridColumns>
+        <ItemsFormInput fluid label="Dive Notes" value={dive?.notes || ''} />
+        <Form.Field style={{ marginBottom: 0 }}>
+          <label>
+            {(diveSamplesCount &&
+              `${numeral(diveSamplesCount).format('0,0')} `) ||
+              ''}
+            Dive Sample{diveSamplesCount === 1 ? '' : 's'}
+          </label>
+        </Form.Field>
+        {[
+          ...Array(Math.max(1, Math.ceil((diveSamplesCount || 1) / 10))).keys(),
+        ].map((i) => (
+          <ItemsChildrenBlock
+            key={i}
+            uuid={dive?._coreUUID || ''}
+            type="diveSample"
+            from={i * 10}
+            size={10}
+            minRowHeight={30}
+            itemRow={(item) => (
+              <FormGridColumns key={item._uuid} widths={[2, 12, 2]}>
+                <ItemsDiveSampleModal uuid={item._uuid}>
+                  <Button primary fluid icon style={{ marginBottom: 2 }}>
+                    <Icon name="edit" />
+                  </Button>
+                </ItemsDiveSampleModal>
+                <Form.Input fluid readOnly value={item._osuid} />
+                <Button primary fluid icon style={{ marginBottom: 2 }}>
+                  <Icon name="delete" />
+                </Button>
+              </FormGridColumns>
+            )}
+          />
+        ))}
+        <FormGridColumns widths={[14, 2]}>
+          <Form.Select
+            fluid
+            multiple
+            search
+            renderLabel={({ value }) => `${value}`}
+            options={_.keys({}).map((x) => {
+              return {
+                key: x,
+                value: x,
+                text: <OSUID uuIDs={{ diveSample: x }} />,
+              };
+            })}
+          />
+          <Button primary fluid icon style={{ marginBottom: 2 }}>
+            <Icon name="plus" />
+          </Button>
+        </FormGridColumns>
+      </>
     </Modal>
   );
 };

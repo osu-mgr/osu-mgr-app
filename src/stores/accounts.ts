@@ -1,23 +1,15 @@
-import { v4 as uuIDV4 } from 'uuid';
 import { atom } from 'recoil';
 
-const uuIDAAPK = uuIDV4();
 export type Account = {
+  _docType?: 'account';
+  _uuid?: string;
   name?: string;
-  pin?: number;
+  _pin?: string;
+  _permissions?: string[];
 };
-const accountsDefault: { [uuID: string]: Account } = {
-  [uuIDAAPK]: {
-    name: 'Anthony Koppers',
-    pin: 1234,
-  },
-};
-export const accountsState = atom({
-  key: 'accounts',
-  default: accountsDefault,
-});
 
+const loginDefault: Account = {};
 export const loginState = atom({
   key: 'login',
-  default: uuIDAAPK,
+  default: loginDefault,
 });

@@ -1,7 +1,7 @@
 {
   "name": "osu-mgr-app",
   "productName": "OSU-MGR App",
-  "version": "3.0.0-alpha.6",
+  "version": "3.0.0-beta.2",
   "description": "OSU-MGR App",
   "author": "Rupert Minnett",
   "scripts": {
@@ -9,5 +9,6 @@
     "postinstall": "yarn electron-rebuild"
   },
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {},
+  "main": "main.prod.js"
 }

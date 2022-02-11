@@ -204,7 +204,7 @@
     "jest": "^27.0.6",
     "lint-staged": "^11.0.0",
     "mini-css-extract-plugin": "^2.1.0",
-    "node-sass": "^6.0.1",
+    "node-sass": "^7.0.0",
     "opencollective-postinstall": "^2.0.3",
     "prettier": "^2.3.2",
     "react-refresh": "^0.10.0",

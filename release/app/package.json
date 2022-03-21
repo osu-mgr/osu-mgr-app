@@ -1,0 +1,15 @@
+{
+  "name": "osu-mgr-app",
+  "productName": "OSU-MGR App",
+  "version": "3.0.0-beta.7",
+  "description": "OSU-MGR App",
+  "main": "./dist/main/main.js",
+  "author": "Rupert Minnett",
+  "scripts": {
+    "electron-rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
+    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts",
+    "postinstall": "npm run electron-rebuild && npm run link-modules"
+  },
+  "dependencies": {},
+  "license": "MIT"
+}

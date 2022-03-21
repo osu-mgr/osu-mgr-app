@@ -1,23 +1,15 @@
 module.exports = {
-  extends: 'erb',
   rules: {
-    // A temporary hack related to IDE not resolving correct package.json
+    'react/react-in-jsx-scope': 'off',
+    'no-console': 'off',
+    'global-require': 'off',
+    'import/no-dynamic-require': 'off',
     'import/no-extraneous-dependencies': 'off',
     'no-underscore-dangle': 'off',
     'react/no-array-index-key': 'off',
     'jsx-a11y/label-has-associated-control': 'off',
-    'prettier/prettier': [
-      'error',
-      {
-        endOfLine: 'auto',
-      },
-    ],
-    'no-restricted-syntax': [
-      'error',
-      'ForInStatement',
-      'LabeledStatement',
-      'WithStatement',
-    ],
+    'import/no-cycle': 'off',
+    'react/require-default-props': 'off'
   },
   parserOptions: {
     ecmaVersion: 2020,
@@ -31,19 +23,11 @@ module.exports = {
       // See https://github.com/benmosher/eslint-plugin-import/issues/1396#issuecomment-575727774 for line below
       node: {},
       webpack: {
-        config: require.resolve('./.erb/configs/webpack.config.eslint.js'),
+        config: require.resolve('./.erb/configs/webpack.config.eslint.ts'),
       },
     },
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
   },
-  overrides: [
-    {
-      files: ['**/*.tsx'],
-      rules: {
-        'react/prop-types': 'off',
-      },
-    },
-  ],
 };

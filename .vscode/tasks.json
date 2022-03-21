@@ -17,9 +17,16 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": "Compiling\\.\\.\\.$",
-          "endsPattern": "(Compiled successfully|Failed to compile)\\.$"
+          "endsPattern": "404s will fallback to"
         }
       }
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: start",
     }
   ]
 }

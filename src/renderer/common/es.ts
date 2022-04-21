@@ -59,7 +59,7 @@ const client: Client = new Client({
     // ipcRenderer.sendSync('ipc-env', 'ES_NODE') ||
     'https://admin:admin@opensearch.marfik.earthref.org:9400',
 });
-const index = 'osu-mgr-dev'; // ipcRenderer.sendSync('ipc-env', 'ES_INDEX') || 'osu-mgr-dev';
+const index = 'osu-mgr'; // ipcRenderer.sendSync('ipc-env', 'ES_INDEX') || 'osu-mgr-dev';
 
 export async function* scrollSearch(params: any) {
   let response: ApiResponse<SearchResponse> = await client.search(params);
@@ -408,6 +408,135 @@ export const countByType = async (
   return count;
 };
 
+export const searchByLocation = async (
+  location?: string,
+  rack?: string,
+  position?: string,
+  slot?: string,
+  search?: ItemsSearch,
+  from?: number,
+  size?: number,
+  filter?: 'recent' | 'valid' | 'warning' | 'error'
+): Promise<Hit[]> => {
+  const docs: Hit[] = [];
+  if (from && size && from + size > 10000) return docs;
+  let boolMust: Record<any, any>[] = [
+    { term: { '_docType.keyword': 'sectionHalf' } },
+  ];
+  let boolMustNot: Record<any, any>[] = [];
+  let boolFilter: Record<any, any>[] = [];
+  let locationPrefix = location || '';
+  if (rack) {
+    locationPrefix += `-${rack}`;
+    if (position) {
+      locationPrefix += `-${position}`;
+      if (slot) {
+        locationPrefix += `-${slot}`;
+      }
+    }
+  }
+  if (locationPrefix !== '')
+    boolMust = [
+      ...boolMust,
+      { prefix: { 'storageLocation.keyword': locationPrefix.toUpperCase() } },
+    ];
+  else
+    boolMust = [...boolMust, { exists: { field: 'storageLocation.keyword' } }];
+  if (search && search.searchString !== '')
+    boolMust = [
+      ...boolMust,
+      {
+        bool: {
+          should: [
+            {
+              multi_match: {
+                query: search.searchString.toLowerCase(),
+                type: 'bool_prefix',
+                fields: ['*.substring'],
+                operator: 'and',
+                analyzer: 'whitespace',
+              },
+            },
+            {
+              prefix: {
+                '_osuid.keyword': {
+                  value: search.searchString.toUpperCase(),
+                },
+              },
+            },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+    ];
+  if (search?.filter === 'recent' || filter === 'recent')
+    boolMust = [...boolMust, { range: { _modified: { gte: 'now-1w' } } }];
+  if (search?.filter === 'valid' || filter === 'valid') {
+    boolMust = [...boolMust, { exists: { field: '_validated' } }];
+    boolMustNot = [
+      ...boolMustNot,
+      { exists: { field: '_warnings' } },
+      { exists: { field: '_errors' } },
+    ];
+    boolFilter = [
+      ...boolFilter,
+      {
+        script: {
+          script:
+            "doc['_validated'].value.millis > doc['_modified'].value.millis",
+        },
+      },
+    ];
+  }
+  if (search?.filter === 'warning' || filter === 'warning')
+    boolMust = [...boolMust, { exists: { field: '_warnings' } }];
+  if (search?.filter === 'error' || filter === 'error')
+    boolMust = [...boolMust, { exists: { field: '_errors' } }];
+  let sort: Record<string, 'asc' | 'desc'>[] = [];
+  if (search?.sortOrder === 'ids asc')
+    sort = [
+      { 'cruise.keyword': 'asc' },
+      { _coreNumber: 'asc' },
+      { _sectionNumber: 'asc' },
+      { _diveNumber: 'asc' },
+      { _diveSampleNumber: 'asc' },
+      { '_osuid.keyword': 'asc' },
+    ];
+  if (search?.sortOrder === 'ids desc')
+    sort = [
+      { 'cruise.keyword': 'desc' },
+      { _coreNumber: 'desc' },
+      { _sectionNumber: 'desc' },
+      { _diveNumber: 'desc' },
+      { _diveSampleNumber: 'desc' },
+      { '_osuid.keyword': 'desc' },
+    ];
+  if (search?.sortOrder === 'modified asc') sort = [{ _modified: 'asc' }];
+  if (search?.sortOrder === 'modified desc') sort = [{ _modified: 'desc' }];
+  if (search?.sortOrder === 'alpha asc') sort = [{ '_osuid.keyword': 'asc' }];
+  if (search?.sortOrder === 'alpha desc') sort = [{ '_osuid.keyword': 'desc' }];
+  const params: RequestParams.Search = {
+    from: from || 0,
+    size: size || 10000,
+    index,
+    body: {
+      sort,
+      query: {
+        bool: { must: boolMust, must_not: boolMustNot, filter: boolFilter },
+      },
+      highlight: {
+        pre_tags: '',
+        post_tags: '',
+        fields: { '*.substring': {} },
+      },
+    },
+  };
+  for await (const hit of scrollSearch(params)) {
+    docs.push(hit);
+  }
+  return docs;
+};
+
 export const countByLocation = async (
   location?: string,
   rack?: string,
@@ -436,6 +565,8 @@ export const countByLocation = async (
       ...boolMust,
       { prefix: { 'storageLocation.keyword': locationPrefix.toUpperCase() } },
     ];
+  else
+    boolMust = [...boolMust, { exists: { field: 'storageLocation.keyword' } }];
   if (search && search.searchString !== '')
     boolMust = [
       ...boolMust,

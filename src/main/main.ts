@@ -38,11 +38,11 @@ ipcMain.on('ipc-env', async (event, arg) => {
   console.log('ipc-env', arg, process.env[arg]);
 });
 
-// ipcMain.on('ipc-showOpenDialog', async (event, arg) => {
-//   dialog.showOpenDialog(null, arg).then(filePaths => {
-//       event.sender.send('ipc-showOpenDialog', filePaths);
-//   });
-// });
+ipcMain.on('ipc-showOpenDialog', async (event, arg) => {
+  dialog.showOpenDialog(null, arg).then((filePaths) => {
+    event.sender.send('ipc-showOpenDialog', filePaths);
+  });
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

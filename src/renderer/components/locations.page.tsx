@@ -4,8 +4,8 @@ import {
   Input,
   List,
   Button,
+  ButtonGroup,
   Icon,
-  Grid,
   Dropdown,
   SemanticICONS,
 } from 'semantic-ui-react';
@@ -13,7 +13,9 @@ import { useRecoilState } from 'recoil';
 import { useInView } from 'react-hook-inview';
 import useMountedState from '../common/useMountedState';
 import ListItemHistoryPushLink from './list.item.history-push.link';
+import PageScroll from './page-scroll';
 import LocationsCount from './locations.count';
+import LocationsMap from './locations.map';
 import LocationsFilterLabels from './locations.filter-labels';
 import {
   locationAreas,
@@ -24,11 +26,11 @@ import {
   locationPrefixesIcon,
   locationPrefixesCornerIcon,
 } from '../common/storageLocations';
-import { countByType } from '../common/es';
+import { countByLocation } from '../common/es';
 import { locationsSearchState, LocationsSearch } from '../stores/locations';
 import ItemsSectionHalfModal from './items.section-half.modal';
 import ItemsItemRow from './items.item-row';
-import ItemsRowsBlock from './items.item-rows-block';
+import LocationsRowsBlock from './locations.item-rows-block';
 
 const LocationsSearchBar: FunctionComponent<{
   plural: string;
@@ -50,7 +52,7 @@ const LocationsSearchBar: FunctionComponent<{
     if (!isVisible) {
       setSearchString(search.searchString);
     }
-  }, [setSearchString, search]);
+  }, [isVisible, search]);
   return (
     <Input
       fluid
@@ -201,113 +203,189 @@ const LocationsPage: FunctionComponent<{
 }> = ({ location, rack, position, slot }) => {
   const isMounted = useMountedState();
   const [search, setSearch] = useRecoilState(locationsSearchState);
-  const [ref, isVisible] = useInView({
-    threshold: 0,
-  });
   const [itemsCount, setItemsCount] = useState<number | undefined>(undefined);
-  const [maxPages, setMaxPages] = useState<number>(1);
-
-  const pageSize = 10;
 
   useEffect(() => {
     setItemsCount(undefined);
     if (isMounted())
       (async () => {
-        const update = await countByType('sectionHalf', search);
+        const update = await countByLocation(
+          location,
+          rack,
+          position,
+          slot,
+          search
+        );
         if (isMounted()) setItemsCount(update);
       })();
   }, [isMounted, search]);
-  useEffect(() => {
-    if (
-      isMounted() &&
-      isVisible &&
-      itemsCount &&
-      itemsCount / pageSize > maxPages
-    )
-      setMaxPages(maxPages + 1);
-  }, [isMounted, isVisible, itemsCount, maxPages]);
 
-  console.log(
-    'LocationPage',
-    isMounted(),
-    isVisible,
-    itemsCount,
-    maxPages,
-    location,
-    rack,
-    position,
-    slot
-  );
+  const view = search.view !== 'items' && slot ? 'items' : search.view;
+
   return (
     <>
       <LocationsSearchBar plural="Items" />
-      <Grid style={{ marginTop: '1em', marginBottom: '1em' }} columns={3}>
-        <Grid.Column style={{ paddingTop: 0, paddingBottom: 0 }}>
-          <Button
-            fluid
-            icon
-            primary={search.view == 'locations'}
-            onClick={() => {
-              setMaxPages(1);
-              setSearch({ ...search, view: 'locations' });
+      <ButtonGroup fluid size="mini">
+        <Button
+          icon
+          primary={view == 'locations'}
+          onClick={() => {
+            setSearch({ ...search, view: 'locations' });
+          }}
+          disabled={slot !== undefined}
+        >
+          <Icon name="warehouse" />
+          <Button.Content>Locations</Button.Content>
+        </Button>
+        <Button
+          icon
+          primary={view == 'items'}
+          onClick={() => {
+            setSearch({ ...search, view: 'items' });
+          }}
+        >
+          <Icon name="list layout" />
+          <Button.Content>
+            <LocationsCount
+              location={location}
+              rack={rack}
+              position={position}
+              slot={slot}
+              label="Items"
+            />
+          </Button.Content>
+        </Button>
+        <Button
+          icon
+          primary={view == 'map'}
+          onClick={() => {
+            setSearch({ ...search, view: 'map' });
+          }}
+          disabled={slot !== undefined}
+        >
+          <Icon name="map outline" />
+          <Button.Content>Map</Button.Content>
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup fluid size="mini">
+        <Button
+          size="mini"
+          primary={search.filter == 'recent'}
+          style={{
+            marginTop: '1em',
+            color: search.filter == 'recent' ? 'white' : 'rgba(0, 0, 0, 0.75)',
+          }}
+          onClick={() => {
+            setSearch({
+              ...search,
+              filter: search.filter === 'recent' ? undefined : 'recent',
+            });
+          }}
+        >
+          <Icon
+            name="edit"
+            style={{
+              color:
+                search.filter == 'recent' ? 'white' : 'rgba(0, 0, 0, 0.75)',
             }}
-          >
-            <Icon name="warehouse" />
-            <Button.Content>Locations</Button.Content>
-          </Button>
-        </Grid.Column>
-        <Grid.Column style={{ paddingTop: 0, paddingBottom: 0 }}>
-          <Button
-            fluid
-            icon
-            primary={search.view == 'items'}
-            onClick={() => {
-              setMaxPages(1);
-              setSearch({ ...search, view: 'items' });
-            }}
-          >
-            <Icon name="list layout" />
-            <Button.Content>Items</Button.Content>
-          </Button>
-        </Grid.Column>
-        <Grid.Column style={{ paddingTop: 0, paddingBottom: 0 }}>
-          <Button primary fluid icon disabled>
-            <Icon name="map outline" />
-            <Button.Content>Map</Button.Content>
-          </Button>
-        </Grid.Column>
-      </Grid>
-      <List relaxed divided>
-        <List.Item>
-          <List.Content floated="left">
-            <Icon.Group size="big">
-              <Icon
-                name="list layout"
-                style={{ padding: 0, minWidth: '2.5rem' }}
-              />
-            </Icon.Group>
-          </List.Content>
-          <List.Content style={{ marginLeft: '3.75rem' }}>
-            <h3 style={{ margin: 0 }}>
-              <LocationsCount
-                location={location}
-                rack={rack}
-                position={position}
-                slot={slot}
-                singular="Item"
-                plural="Items"
-              />
-            </h3>
-            <List.Description style={{ marginTop: '.5rem' }}>
-              <LocationsFilterLabels
-                location={location}
-                rack={rack}
-                position={position}
-                slot={slot}
-              />
-            </List.Description>
-          </List.Content>
-        </List.Item>
+          />
+          <LocationsCount
+            location={location}
+            rack={rack}
+            position={position}
+            slot={slot}
+            label="Recents"
+            filter="recent"
+            inverted={search.filter == 'recent'}
+          />
+        </Button>
+        <Button
+          size="mini"
+          primary={search.filter == 'valid'}
+          style={{
+            marginTop: '1em',
+            color: search.filter == 'valid' ? 'white' : '#2C662D',
+          }}
+          onClick={() => {
+            setSearch({
+              ...search,
+              filter: search.filter === 'valid' ? undefined : 'valid',
+            });
+          }}
+        >
+          <Icon
+            name="check circle"
+            style={{ color: search.filter == 'valid' ? 'white' : '#2C662D' }}
+          />
+          <LocationsCount
+            location={location}
+            rack={rack}
+            position={position}
+            slot={slot}
+            label="Valid"
+            filter="valid"
+            inverted={search.filter == 'valid'}
+          />
+        </Button>
+        <Button
+          size="mini"
+          primary={search.filter == 'warning'}
+          style={{
+            marginTop: '1em',
+            color: search.filter == 'warning' ? 'white' : '#F2711C',
+          }}
+          onClick={() => {
+            setSearch({
+              ...search,
+              filter: search.filter === 'warning' ? undefined : 'warning',
+            });
+          }}
+        >
+          <Icon
+            name="exclamation circle"
+            style={{ color: search.filter == 'warning' ? 'white' : '#F2711C' }}
+          />
+          <LocationsCount
+            location={location}
+            rack={rack}
+            position={position}
+            slot={slot}
+            label="Warnings"
+            filter="warning"
+            inverted={search.filter == 'warning'}
+          />
+        </Button>
+        <Button
+          size="mini"
+          primary={search.filter == 'error'}
+          style={{
+            marginTop: '1em',
+            color: search.filter == 'error' ? 'white' : '#9F3A38',
+          }}
+          onClick={() => {
+            setSearch({
+              ...search,
+              filter: search.filter === 'error' ? undefined : 'error',
+            });
+          }}
+        >
+          <Icon
+            name="times circle"
+            style={{ color: search.filter == 'error' ? 'white' : '#9F3A38' }}
+          />
+          <LocationsCount
+            location={location}
+            rack={rack}
+            position={position}
+            slot={slot}
+            label="Errors"
+            filter="error"
+            inverted={search.filter == 'error'}
+          />
+        </Button>
+      </ButtonGroup>
+      <List relaxed divided style={{ marginTop: '0.5em' }}>
+        <List.Item></List.Item>
         {search.view == 'locations' &&
           !location &&
           locationAreas.map((x) => (
@@ -350,64 +428,63 @@ const LocationsPage: FunctionComponent<{
               hideEmpty={search.hideEmpty}
             />
           ))}
-        {search.view == 'locations' &&
+        {(search.view == 'locations' &&
           location &&
           rack &&
           position &&
-          !slot &&
-          locationSlots[location][rack][position].map((x) => (
-            <ListItemCounts
-              key={`slot_${x}`}
-              title={`${location}-${rack}-${position}-${x}`}
-              icon={locationPrefixesIcon[location]}
-              cornerIcon={locationPrefixesCornerIcon[location]}
+          !slot && (
+            <PageScroll
+              pageSize={10}
+              rows={locationSlots[location][rack][position].map((x) => (
+                <ListItemCounts
+                  key={`slot_${x}`}
+                  title={`${location}-${rack}-${position}-${x}`}
+                  icon={locationPrefixesIcon[location]}
+                  cornerIcon={locationPrefixesCornerIcon[location]}
+                  location={location}
+                  rack={rack}
+                  position={position}
+                  slot={x}
+                  hideEmpty={search.hideEmpty}
+                />
+              ))}
+            />
+          )) ||
+          ''}
+      </List>
+      {((search.view == 'items' || slot) && itemsCount && (
+        <PageScroll
+          pageSize={10}
+          rows={[...Array(itemsCount).keys()].map((i) => (
+            <LocationsRowsBlock
+              key={`item_${i}`}
+              minRowHeight={50}
+              from={i * 10}
+              size={10}
               location={location}
               rack={rack}
               position={position}
-              slot={x}
-              hideEmpty={search.hideEmpty}
+              slot={slot}
+              itemRow={(hit) => (
+                <ItemsSectionHalfModal
+                  uuid={hit._source._uuid}
+                  key={hit._source._uuid}
+                >
+                  <List.Item as="a" style={{ minHeight: 50 }}>
+                    <ItemsItemRow
+                      item={hit._source}
+                      matches={hit.highlight}
+                      title={hit._source._osuid}
+                    />
+                  </List.Item>
+                </ItemsSectionHalfModal>
+              )}
             />
           ))}
-      </List>
-      {(search.view == 'items' &&
-        itemsCount &&
-        [...Array(maxPages).keys()].map((i) => (
-          <ItemsRowsBlock
-            type={'sectionHalf'}
-            key={`item_${i}`}
-            minRowHeight={50}
-            from={i * pageSize}
-            size={pageSize}
-            itemRow={(hit) => (
-              <ItemsSectionHalfModal
-                uuid={hit._source._uuid}
-                key={hit._source._uuid}
-              >
-                <List.Item as="a" style={{ minHeight: 50 }}>
-                  <ItemsItemRow
-                    item={hit._source}
-                    matches={hit.highlight}
-                    title={hit._source._osuid}
-                    labels={[
-                      { label: '', value: hit._source.name },
-                      {
-                        label: '',
-                        value: hit._source.rvName,
-                      },
-                    ]}
-                  />
-                </List.Item>
-              </ItemsSectionHalfModal>
-            )}
-          />
-        ))) ||
+        />
+      )) ||
         ''}
-      {(search.view == 'items' &&
-        itemsCount &&
-        itemsCount / pageSize > maxPages && (
-          <div ref={ref} style={{ minHeight: 50 }} />
-        )) ||
-        ''}
+      {search.view == 'map' && !location && <LocationsMap />}
     </>
   );
 };

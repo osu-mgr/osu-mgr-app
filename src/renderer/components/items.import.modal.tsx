@@ -705,14 +705,14 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
               fluid
               size="huge"
               onClick={() => {
-                // ipcRenderer.send('ipc-showOpenDialog', {
-                //   properties: ['multiSelections', 'openFile'],
-                // });
-                // ipcRenderer.on('ipc-showOpenDialog',(_, result)=>{
-                //     if (result.filePaths && !result.canceled) {
-                //       setFilePaths([...filePaths, ...result.filePaths]);
-                //     }
-                // });
+                ipcRenderer.send('ipc-showOpenDialog', {
+                  properties: ['multiSelections', 'openFile'],
+                });
+                ipcRenderer.on('ipc-showOpenDialog', (_, result) => {
+                  if (result.filePaths && !result.canceled) {
+                    setFilePaths([...filePaths, ...result.filePaths]);
+                  }
+                });
               }}
             >
               <Icon name="file excel outline" style={{ padding: 0 }} /> Select

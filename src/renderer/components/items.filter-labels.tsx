@@ -1,17 +1,19 @@
 import { FunctionComponent, useState, useEffect } from 'react';
 import { useInView } from 'react-hook-inview';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { Icon, Button } from 'semantic-ui-react';
 import useMountedState from '../common/useMountedState';
 import ItemsCount from './items.count';
+import { historyState } from '../stores/history';
 import { ItemType, itemsSearchState } from '../stores/items';
 import { countByType } from '../common/es';
 
 const ItemFilterLabels: FunctionComponent<{
   type?: ItemType;
 }> = ({ type }) => {
+  const history = useRecoilValue(historyState);
   const isMounted = useMountedState();
-  const [search, setSearch] = useRecoilState(itemsSearchState);
+  const search = useRecoilValue(itemsSearchState);
   const [recentCount, setRecentCount] = useState<number | undefined>(undefined);
   const [validCount, setValidCount] = useState<number | undefined>(undefined);
   const [warningCount, setWarningCount] = useState<number | undefined>(
@@ -23,32 +25,36 @@ const ItemFilterLabels: FunctionComponent<{
   });
   useEffect(() => {
     setRecentCount(undefined);
-    (async () => {
-      const update = await countByType(type, search, 'recent');
-      if (isMounted()) setRecentCount(update);
-    })();
-  }, [isMounted, isVisible, search, type]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByType(type, search, 'recent');
+        if (isMounted() && !history.switching) setRecentCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, type]);
   useEffect(() => {
     setValidCount(undefined);
-    (async () => {
-      const update = await countByType(type, search, 'valid');
-      if (isMounted()) setValidCount(update);
-    })();
-  }, [isMounted, isVisible, search, type]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByType(type, search, 'valid');
+        if (isMounted() && !history.switching) setValidCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, type]);
   useEffect(() => {
     setWarningCount(undefined);
-    (async () => {
-      const update = await countByType(type, search, 'warning');
-      if (isMounted()) setWarningCount(update);
-    })();
-  }, [isMounted, isVisible, search, type]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByType(type, search, 'warning');
+        if (isMounted() && !history.switching) setWarningCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, type]);
   useEffect(() => {
     seErrorCount(undefined);
-    (async () => {
-      const update = await countByType(type, search, 'error');
-      if (isMounted()) seErrorCount(update);
-    })();
-  }, [isMounted, isVisible, search, type]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByType(type, search, 'error');
+        if (isMounted() && !history.switching) seErrorCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, type]);
   return (
     <>
       <span ref={ref} />
@@ -64,12 +70,6 @@ const ItemFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (recentCount === undefined || recentCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'recent' ? undefined : 'recent',
-          });
-        }}
       >
         <Icon
           name="edit"
@@ -91,12 +91,6 @@ const ItemFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (validCount === undefined || validCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'valid' ? undefined : 'valid',
-          });
-        }}
       >
         <Icon name="check circle" style={{ color: '#2C662D' }} />
         <ItemsCount type={type} label="Valid" filter="valid" />
@@ -113,12 +107,6 @@ const ItemFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (warningCount === undefined || warningCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'warning' ? undefined : 'warning',
-          });
-        }}
       >
         <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
         <ItemsCount type={type} label="With Warnings" filter="warning" />
@@ -135,12 +123,6 @@ const ItemFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (errorCount === undefined || errorCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'error' ? undefined : 'error',
-          });
-        }}
       >
         <Icon name="times circle" style={{ color: '#9F3A38' }} />
         <ItemsCount type={type} label="With Errors" filter="error" />

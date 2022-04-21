@@ -5,7 +5,6 @@ import { Dimmer } from 'semantic-ui-react';
 import { historyState } from '../stores/history';
 import ErrorPage from './error.page';
 import HomePage from './home.page';
-import ItemsPage from './items.page';
 import ItemsTypePage from './items.type.page';
 import LocationsPage from './locations.page';
 import { ItemType, itemTypesPlural } from '../stores/items';
@@ -17,7 +16,7 @@ const itemPluralsType = Object.fromEntries(
 const Router: FunctionComponent<{ path: string }> = ({ path }) => {
   const history = useRecoilValue(historyState);
   if (path === 'Home') return <HomePage />;
-  if (path === 'Items') return <ItemsPage />;
+  if (path === 'Item Types') return <ItemsTypePage />;
   if (itemPluralsType[path])
     return <ItemsTypePage type={itemPluralsType[path] as ItemType} />;
   if (path === 'Storage Locations') return <LocationsPage />;
@@ -28,21 +27,13 @@ const Router: FunctionComponent<{ path: string }> = ({ path }) => {
     return (
       <LocationsPage
         location={
-          (history.locations.length > 2 && history.locations[2].path) ||
-          undefined
+          (history.index >= 2 && history.locations[2].path) || undefined
         }
-        rack={
-          (history.locations.length > 3 && history.locations[3].path) ||
-          undefined
-        }
+        rack={(history.index >= 3 && history.locations[3].path) || undefined}
         position={
-          (history.locations.length > 4 && history.locations[4].path) ||
-          undefined
+          (history.index >= 4 && history.locations[4].path) || undefined
         }
-        slot={
-          (history.locations.length > 5 && history.locations[5].path) ||
-          undefined
-        }
+        slot={(history.index >= 5 && history.locations[5].path) || undefined}
       />
     );
   return <ErrorPage />;

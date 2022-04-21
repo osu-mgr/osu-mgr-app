@@ -13,9 +13,8 @@ import { Item, itemsSearchState } from '../stores/items';
 const ItemsItemRow: FunctionComponent<{
   item: Item;
   title: string;
-  labels?: Record<string, string>[];
   matches?: Record<string, string>;
-}> = ({ item, title, labels, matches }) => {
+}> = ({ item, title, matches }) => {
   const isMounted = useMountedState();
   const search = useRecoilValue(itemsSearchState);
   const [editAccount, setEditAccount] = useState<Account | undefined>(

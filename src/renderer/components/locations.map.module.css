@@ -1,0 +1,52 @@
+.spinner {
+  display: flex;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.spinner > div {
+  width: 6rem;
+  height: 6rem;
+  border-width: .25rem;
+  position: relative;
+}
+
+.sectionContainer {
+  padding-left: 1rem;
+  overflow-y: scroll;
+  height: calc(100vh - 14.5rem);
+}
+
+.map {
+  width: calc(60vmin);
+  height: calc(1.71051 * (60vmin));
+  margin: 0 auto;
+  border-collapse: collapse;
+  position: relative;
+}
+
+.zoneLabel {
+  font-weight: bold;
+  color: #D73F09;
+  font-size: .6em;
+}
+
+.zoneLink {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.zone {
+  height: calc(100% - 2em);
+  position: relative;
+  border: .3rem dashed #D73F09;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

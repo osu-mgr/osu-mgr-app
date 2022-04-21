@@ -15,7 +15,11 @@ const HomePage: FunctionComponent = () => {
           margin: '1rem auto',
         }}
       />
-      <ListItemHistoryPushLink path="Items" title="Items" icon="list layout">
+      <ListItemHistoryPushLink
+        path="Item Types"
+        title="Item Types"
+        icon="list layout"
+      >
         Manage Repository Cruises/Programs to Subsamples
       </ListItemHistoryPushLink>
       <ListItemHistoryPushLink

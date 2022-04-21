@@ -1,9 +1,10 @@
 import { FunctionComponent, useState, useEffect } from 'react';
 import { useInView } from 'react-hook-inview';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { Icon, Button } from 'semantic-ui-react';
 import useMountedState from '../common/useMountedState';
 import LocationsCount from './locations.count';
+import { historyState } from '../stores/history';
 import { itemsSearchState } from '../stores/items';
 import { countByLocation } from '../common/es';
 
@@ -13,8 +14,9 @@ const LocationsFilterLabels: FunctionComponent<{
   position?: string;
   slot?: string;
 }> = ({ location, rack, position, slot }) => {
+  const history = useRecoilValue(historyState);
   const isMounted = useMountedState();
-  const [search, setSearch] = useRecoilState(itemsSearchState);
+  const search = useRecoilValue(itemsSearchState);
   const [recentCount, setRecentCount] = useState<number | undefined>(undefined);
   const [validCount, setValidCount] = useState<number | undefined>(undefined);
   const [warningCount, setWarningCount] = useState<number | undefined>(
@@ -26,60 +28,64 @@ const LocationsFilterLabels: FunctionComponent<{
   });
   useEffect(() => {
     setRecentCount(undefined);
-    (async () => {
-      const update = await countByLocation(
-        location,
-        rack,
-        position,
-        slot,
-        search,
-        'recent'
-      );
-      if (isMounted()) setRecentCount(update);
-    })();
-  }, [isMounted, isVisible, search, location, rack, position, slot]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByLocation(
+          location,
+          rack,
+          position,
+          slot,
+          search,
+          'recent'
+        );
+        if (isMounted() && !history.switching) setRecentCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, location, rack, position, slot]);
   useEffect(() => {
     setValidCount(undefined);
-    (async () => {
-      const update = await countByLocation(
-        location,
-        rack,
-        position,
-        slot,
-        search,
-        'valid'
-      );
-      if (isMounted()) setValidCount(update);
-    })();
-  }, [isMounted, isVisible, search, location, rack, position, slot]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByLocation(
+          location,
+          rack,
+          position,
+          slot,
+          search,
+          'valid'
+        );
+        if (isMounted() && !history.switching) setValidCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, location, rack, position, slot]);
   useEffect(() => {
     setWarningCount(undefined);
-    (async () => {
-      const update = await countByLocation(
-        location,
-        rack,
-        position,
-        slot,
-        search,
-        'warning'
-      );
-      if (isMounted()) setWarningCount(update);
-    })();
-  }, [isMounted, isVisible, search, location, rack, position, slot]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByLocation(
+          location,
+          rack,
+          position,
+          slot,
+          search,
+          'warning'
+        );
+        if (isMounted() && !history.switching) setWarningCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, location, rack, position, slot]);
   useEffect(() => {
     seErrorCount(undefined);
-    (async () => {
-      const update = await countByLocation(
-        location,
-        rack,
-        position,
-        slot,
-        search,
-        'error'
-      );
-      if (isMounted()) seErrorCount(update);
-    })();
-  }, [isMounted, isVisible, search, location, rack, position, slot]);
+    if (isMounted() && !history.switching)
+      (async () => {
+        const update = await countByLocation(
+          location,
+          rack,
+          position,
+          slot,
+          search,
+          'error'
+        );
+        if (isMounted() && !history.switching) seErrorCount(update);
+      })();
+  }, [history, isMounted, isVisible, search, location, rack, position, slot]);
   return (
     <>
       <span ref={ref} />
@@ -95,12 +101,6 @@ const LocationsFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (recentCount === undefined || recentCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'recent' ? undefined : 'recent',
-          });
-        }}
       >
         <Icon name="edit" style={{ color: 'rgba(0, 0, 0, 0.75)' }} />
         <LocationsCount
@@ -124,12 +124,6 @@ const LocationsFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (validCount === undefined || validCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'valid' ? undefined : 'valid',
-          });
-        }}
       >
         <Icon name="check circle" style={{ color: '#2C662D' }} />
         <LocationsCount
@@ -153,12 +147,6 @@ const LocationsFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (warningCount === undefined || warningCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'warning' ? undefined : 'warning',
-          });
-        }}
       >
         <Icon name="exclamation circle" style={{ color: '#F2711C' }} />
         <LocationsCount
@@ -182,12 +170,6 @@ const LocationsFilterLabels: FunctionComponent<{
           search?.filter === undefined &&
           (errorCount === undefined || errorCount === 0)
         }
-        onClick={() => {
-          setSearch({
-            ...search,
-            filter: search.filter === 'error' ? undefined : 'error',
-          });
-        }}
       >
         <Icon name="times circle" style={{ color: '#9F3A38' }} />
         <LocationsCount

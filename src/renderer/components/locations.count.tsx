@@ -4,6 +4,7 @@ import { useRecoilValue } from 'recoil';
 import { useInView } from 'react-hook-inview';
 import { Loader } from 'semantic-ui-react';
 import useMountedState from '../common/useMountedState';
+import { historyState } from '../stores/history';
 import { ItemsSearch, itemsSearchState } from '../stores/items';
 import { countByLocation } from '../common/es';
 
@@ -16,6 +17,7 @@ const LocationsCount: FunctionComponent<{
   singular?: string;
   plural?: string;
   filter?: 'recent' | 'valid' | 'warning' | 'error';
+  inverted?: boolean;
   onCount?: (count: number) => void;
 }> = ({
   location,
@@ -26,20 +28,19 @@ const LocationsCount: FunctionComponent<{
   singular,
   plural,
   filter,
+  inverted,
   onCount,
 }) => {
+  const history = useRecoilValue(historyState);
   const isMounted = useMountedState();
   const search = useRecoilValue(itemsSearchState);
-  const [timestamp, setTimestamp] = useState<number | undefined>(undefined);
   const [itemsCount, setItemsCount] = useState<number | undefined>(undefined);
   const [ref, isVisible] = useInView({
     threshold: 0,
   });
   useEffect(() => {
-    // if (timestamp !== undefined && Date.now() - timestamp < 30000) return;
-    // setTimestamp(Date.now());
     setItemsCount(undefined);
-    if (isMounted())
+    if (isMounted() && !history.switching)
       (async () => {
         const update = await countByLocation(
           location,
@@ -50,12 +51,11 @@ const LocationsCount: FunctionComponent<{
           filter
         );
         if (onCount) onCount(update);
-        if (isMounted()) setItemsCount(update);
+        if (isMounted() && !history.switching) setItemsCount(update);
       })();
   }, [
-    isMounted,
+    history,
     isVisible,
-    // timestamp,
     filter,
     search,
     location,
@@ -69,11 +69,12 @@ const LocationsCount: FunctionComponent<{
       <span ref={ref} />
       {itemsCount === undefined ? (
         <>
-          <Loader active inline className="inline-loader" /> {plural || label}
+          <Loader active inline className="inline-loader" inverted={inverted} />{' '}
+          {plural || label}
         </>
       ) : (
         <>{`${numeral(itemsCount).format('0,0')} ${
-          itemsCount === 1 ? singular || label : plural || label
+          itemsCount === 1 ? singular || label || '' : plural || label || ''
         }`}</>
       )}
     </>

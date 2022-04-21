@@ -1,7 +1,7 @@
 {
   "name": "osu-mgr-app",
   "productName": "OSU-MGR App",
-  "version": "3.0.0-beta.7",
+  "version": "3.0.0-beta.8",
   "description": "OSU-MGR App",
   "main": "./dist/main/main.js",
   "author": "Rupert Minnett",

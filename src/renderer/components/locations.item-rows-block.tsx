@@ -3,18 +3,30 @@ import { useInView } from 'react-hook-inview';
 import { useRecoilValue } from 'recoil';
 import { Divider, List, Loader } from 'semantic-ui-react';
 import useMountedState from '../common/useMountedState';
-import { ItemType, itemsSearchState } from '../stores/items';
-import { searchByType, Hit } from '../common/es';
+import { locationsSearchState } from '../stores/locations';
+import { searchByLocation, Hit } from '../common/es';
 
-const ItemsRowsBlock: FunctionComponent<{
-  type: ItemType;
+const LocationsRowsBlock: FunctionComponent<{
+  location?: string;
+  rack?: string;
+  position?: string;
+  slot?: string;
   minRowHeight: number;
   from: number;
   size: number;
   itemRow: (Item) => React.ReactElement;
-}> = ({ type, minRowHeight, from, size, itemRow }) => {
+}> = ({
+  location,
+  rack,
+  position,
+  slot,
+  minRowHeight,
+  from,
+  size,
+  itemRow,
+}) => {
   const isMounted = useMountedState();
-  const search = useRecoilValue(itemsSearchState);
+  const search = useRecoilValue(locationsSearchState);
   const [items, setItems] = useState<Hit[] | undefined>(undefined);
   const [ref, isVisible] = useInView({
     threshold: 0,
@@ -25,11 +37,28 @@ const ItemsRowsBlock: FunctionComponent<{
   useEffect(() => {
     if (items === undefined && isVisible && isMounted())
       (async () => {
-        console.log('ItemsRowsBlock ?', isVisible, type, search, from, size);
-        const update = await searchByType(type, search, from, size);
+        console.log(
+          'ItemsRowsBlock ?',
+          isVisible,
+          location,
+          rack,
+          position,
+          slot,
+          from,
+          size
+        );
+        const update = await searchByLocation(
+          location,
+          rack,
+          position,
+          slot,
+          search,
+          from,
+          size
+        );
         if (isMounted()) setItems(update);
       })();
-  }, [isMounted, isVisible, items, search, from, size, type]);
+  }, [isMounted, isVisible, items, search, from, size]);
   return (
     <div
       ref={ref}
@@ -60,4 +89,4 @@ const ItemsRowsBlock: FunctionComponent<{
   );
 };
 
-export default ItemsRowsBlock;
+export default LocationsRowsBlock;

@@ -33,6 +33,36 @@ const LocationsMapZone: FunctionComponent<{
   );
 };
 
+const LocationsMapRack: FunctionComponent<{
+  zone: string;
+  rack: string;
+  style?: React.CSSProperties;
+}> = ({ zone, rack, style }) => {
+  const [history, setHistory] = useRecoilState(historyState);
+  return (
+    <a
+      href="#"
+      onClick={() => {
+        if (history.switching) return;
+        if (zone !== history.locations[history.index].path)
+          setHistory({
+            ...history,
+            index: history.index + 2,
+            locations: [
+              ...history.locations.slice(0, history.index + 1),
+              { path: zone },
+              { path: rack },
+            ],
+          });
+      }}
+    >
+      <div className={styles.zone} style={style}>
+        <LocationsCount location={zone} />
+      </div>
+    </a>
+  );
+};
+
 const LocationsMap: FunctionComponent = () => {
   const border = '.25em solid rgb(89, 89, 89)';
   return (
@@ -117,7 +147,7 @@ const LocationsMap: FunctionComponent = () => {
             rowSpan={3}
           >
             <span className={styles.zoneLabel}>COLD WEST (CW)</span>
-            <LocationsMapZone zone="CW" />
+            <LocationsMapRack zone="CW" rack="M2" />
           </td>
           <td />
           <td

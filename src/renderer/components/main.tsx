@@ -7,6 +7,7 @@ import ErrorPage from './error.page';
 import HomePage from './home.page';
 import ItemsTypePage from './items.type.page';
 import LocationsPage from './locations.page';
+import FilesPage from './files.page';
 import { ItemType, itemTypesPlural } from '../stores/items';
 
 const itemPluralsType = Object.fromEntries(
@@ -20,6 +21,7 @@ const Router: FunctionComponent<{ path: string }> = ({ path }) => {
   if (itemPluralsType[path])
     return <ItemsTypePage type={itemPluralsType[path] as ItemType} />;
   if (path === 'Storage Locations') return <LocationsPage />;
+  if (path === 'File Monitoring') return <FilesPage />;
   if (
     history.locations.length > 1 &&
     history.locations[1].path === 'Storage Locations'

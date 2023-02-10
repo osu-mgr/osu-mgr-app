@@ -506,6 +506,7 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
   const [scanRegex, setScanRegex] = useState<string>('*.*');
   const [scanDirectories, setScanDirectories] = useState<string[]>([]);
   const [filePaths, setFilePaths] = useState<string[]>([]);
+  const [holdingsPaths, setHoldingsPaths] = useState<string[]>([]);
   const [fileItems, setFileItems] = useState<
     { [filePath: string]: ItemsCollection } | undefined
   >(undefined);
@@ -660,6 +661,7 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
       onClose={() => {
         setFileType(undefined);
         setFilePaths([]);
+        setHoldingsPaths([]);
         setFileItems(undefined);
         setImportedCounts({});
         setParsing(false);
@@ -717,6 +719,27 @@ const ItemsImportModal: FunctionComponent = React.memo(({ children }) => {
             >
               <Icon name="file excel outline" style={{ padding: 0 }} /> Select
               Files
+            </Button>
+          </List.Item>
+          <List.Item>
+            <Button
+              primary
+              icon
+              fluid
+              size="huge"
+              onClick={() => {
+                ipcRenderer.send('ipc-showOpenDialog', {
+                  properties: ['multiSelections', 'openDirectory'],
+                });
+                ipcRenderer.on('ipc-showOpenDialog', (_, result) => {
+                  if (result.filePaths && !result.canceled) {
+                    setHoldingsPaths([...filePaths, ...result.filePaths]);
+                  }
+                });
+              }}
+            >
+              <Icon name="folder outline" style={{ padding: 0 }} /> Select
+              Holdings Folders
             </Button>
           </List.Item>
           {filePaths.map((filePath, idx) => (

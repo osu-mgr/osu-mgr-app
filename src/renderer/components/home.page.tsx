@@ -26,7 +26,6 @@ const HomePage: FunctionComponent = () => {
         path="Sample Requests"
         title="Sample Requests"
         icon="clipboard list"
-        disabled
       >
         Manage Sample Requests
       </ListItemHistoryPushLink>
@@ -36,6 +35,13 @@ const HomePage: FunctionComponent = () => {
         icon="warehouse"
       >
         Explore Physical Locations of Repository Items
+      </ListItemHistoryPushLink>
+      <ListItemHistoryPushLink
+        path="File Monitoring"
+        title="File Monitoring"
+        icon="folder"
+      >
+        Detect Changes and Import Files
       </ListItemHistoryPushLink>
       <ListItemHistoryPushLink path="Moves" title="Moves" icon="truck" disabled>
         Coordinate Item Movement Outside Repository

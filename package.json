@@ -96,7 +96,7 @@
   "devDependencies": {
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.4",
     "@semantic-ui-react/css-patch": "^1.0.0",
-    "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
+    "@teamsupercell/typings-for-css-modules-loader": "^2.5.2",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@types/jest": "^27.0.3",

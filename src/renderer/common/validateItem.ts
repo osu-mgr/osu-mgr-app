@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import { coreTypes } from './vocabularies';
 import { Item } from '../stores/items';
 
@@ -6,7 +5,7 @@ const validateItem = (item: Item) => {
   if (item !== undefined) {
     item._errors = [];
     item._warnings = [];
-    item._validated = DateTime.now().toISO();
+    item._validated = item._modified;
     if (
       item._docType === 'cruise' &&
       (item.pi === undefined || item.pi.trim() === '')

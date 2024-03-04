@@ -50,7 +50,7 @@ const runValidation = () => {
       console.log('Validating batch of items...');
       const params = {
         size: 10000,
-        index: 'osu-mgr',
+        index: 'osu-mgr-8',
         body: {
           query: {
             bool: {
@@ -62,7 +62,7 @@ const runValidation = () => {
               filter: {
                 script: {
                   script:
-                    "doc['_validated'].empty || doc['_validated'].value.millis <= doc['_modified'].value.millis",
+                    "doc['_validated'].empty || (doc['_validated'].value.millis/1000 < doc['_modified'].value.millis/1000)",
                 },
               },
             },
@@ -296,6 +296,7 @@ const ItemsTypePage: FunctionComponent<{
             }}
           />
           <ItemsCount
+            type={type}
             label="Recents"
             filter="recent"
             inverted={search.filter == 'recent'}
@@ -328,6 +329,7 @@ const ItemsTypePage: FunctionComponent<{
             }}
           />
           <ItemsCount
+            type={type}
             label="Valid"
             filter="valid"
             inverted={search.filter == 'valid'}
@@ -360,6 +362,7 @@ const ItemsTypePage: FunctionComponent<{
             }}
           />
           <ItemsCount
+            type={type}
             label="Warnings"
             filter="warning"
             inverted={search.filter == 'warning'}
@@ -392,6 +395,7 @@ const ItemsTypePage: FunctionComponent<{
             }}
           />
           <ItemsCount
+            type={type}
             label="Errors"
             filter="error"
             inverted={search.filter == 'error'}
@@ -422,7 +426,7 @@ const ItemsTypePage: FunctionComponent<{
       {(ItemsTypeModal && type && itemsCount && (
         <PageScroll
           pageSize={10}
-          rows={[...Array(itemsCount).keys()].map((i) => (
+          rows={[...Array(Math.ceil(itemsCount / 10)).keys()].map((i) => (
             <ItemsRowsBlock
               type={type}
               key={`${type}_${i}`}

@@ -8,7 +8,16 @@ import {
 } from '@opensearch-project/opensearch';
 
 import { AccountType } from '../stores/accounts';
-import { ItemType, Item, Items, ItemsSearch } from '../stores/items';
+import {
+  ItemType,
+  Item,
+  Items,
+  ItemsSearch,
+  SectionHalf,
+  DiveSample,
+  DiveSubsample,
+} from '../stores/items';
+import { locationPositionConfigurations } from './storageLocations';
 
 // Complete definition of the Search response
 interface ShardsResponse {
@@ -59,7 +68,7 @@ const client: Client = new Client({
     // ipcRenderer.sendSync('ipc-env', 'ES_NODE') ||
     'https://admin:admin@opensearch.marfik.earthref.org:9400',
 });
-const index = 'osu-mgr'; // ipcRenderer.sendSync('ipc-env', 'ES_INDEX') || 'osu-mgr-dev';
+const index = 'osu-mgr-8'; // ipcRenderer.sendSync('ipc-env', 'ES_INDEX') || 'osu-mgr-dev';
 
 export async function* scrollSearch(params: any) {
   let response: ApiResponse<SearchResponse> = await client.search(params);
@@ -546,7 +555,7 @@ export const countByLocation = async (
   filter?: 'recent' | 'valid' | 'warning' | 'error'
 ): Promise<number> => {
   let boolMust: Record<any, any>[] = [
-    { term: { '_docType.keyword': 'sectionHalf' } },
+    { terms: { '_docType.keyword': ['sectionHalf', 'diveSample'] } },
   ];
   let boolMustNot: Record<any, any>[] = [];
   let boolFilter: Record<any, any>[] = [];
@@ -629,4 +638,92 @@ export const countByLocation = async (
   if (response && response.body && response.body.count >= 0)
     count = response.body.count as number;
   return count;
+};
+
+export const weightByLocation = async (
+  location?: string,
+  rack?: string,
+  position?: string,
+  slot?: string
+): Promise<number> => {
+  let boolMust: Record<any, any>[] = [
+    { terms: { '_docType.keyword': ['sectionHalf', 'diveSample'] } },
+  ];
+  let locationPrefix = location || '';
+  if (rack) {
+    locationPrefix += `-${rack}`;
+    if (position) {
+      locationPrefix += `-${position}`;
+      if (slot) {
+        locationPrefix += `-${slot}`;
+      }
+    }
+  }
+  if (locationPrefix !== '')
+    boolMust = [
+      ...boolMust,
+      { prefix: { 'storageLocation.keyword': locationPrefix.toUpperCase() } },
+    ];
+  else
+    boolMust = [...boolMust, { exists: { field: 'storageLocation.keyword' } }];
+  const params: RequestParams.Search = {
+    index,
+    size: 10000,
+    _source: 'weight',
+    body: {
+      query: {
+        bool: { must: boolMust },
+      },
+    },
+  };
+  let weight = 0;
+  for await (const hit of scrollSearch(params)) {
+    const doc = hit._source as SectionHalf | DiveSample;
+    doc.weight && (weight += parseFloat(doc.weight));
+  }
+  return weight;
+};
+
+export const storageByLocation = async (
+  location?: string,
+  rack?: string,
+  position?: string,
+  slot?: string
+): Promise<string[]> => {
+  let boolMust: Record<any, any>[] = [
+    { terms: { '_docType.keyword': ['sectionHalf', 'diveSample'] } },
+  ];
+  let locationPrefix = location || '';
+  if (rack) {
+    locationPrefix += `-${rack}`;
+    if (position) {
+      locationPrefix += `-${position}`;
+      if (slot) {
+        locationPrefix += `-${slot}`;
+      }
+    }
+  }
+  if (locationPrefix !== '')
+    boolMust = [
+      ...boolMust,
+      { prefix: { 'storageLocation.keyword': locationPrefix.toUpperCase() } },
+    ];
+  else
+    boolMust = [...boolMust, { exists: { field: 'storageLocation.keyword' } }];
+  const params: RequestParams.Search = {
+    index,
+    size: 10000,
+    _source: 'storageLocation',
+    body: {
+      query: {
+        bool: { must: boolMust },
+      },
+    },
+  };
+  let storageLocations = {};
+  for await (const hit of scrollSearch(params)) {
+    const doc = hit._source as SectionHalf;
+    doc.storageLocation && (storageLocations[doc.storageLocation] = true);
+  }
+  return _.keys(storageLocations);
 };

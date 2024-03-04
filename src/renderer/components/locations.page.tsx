@@ -16,12 +16,15 @@ import ListItemHistoryPushLink from './list.item.history-push.link';
 import PageScroll from './page-scroll';
 import LocationsCount from './locations.count';
 import LocationsMap from './locations.map';
+import LocationsZone from './locations.zone';
+import LocationsRack from './locations.rack';
+import LocationsPosition from './locations.position';
 import LocationsFilterLabels from './locations.filter-labels';
 import {
   locationAreas,
-  locationRacks,
-  locationPositions,
-  locationSlots,
+  locationRackNames,
+  locationPositionNames,
+  locationSlotNames,
   locationPrefixesName,
   locationPrefixesIcon,
   locationPrefixesCornerIcon,
@@ -139,6 +142,44 @@ const LocationsSearchBar: FunctionComponent<{
   );
 };
 
+const LocationsAddItem: FunctionComponent<{ location: string }> = ({
+  location,
+}) => {
+  const [osuID, setOSUID] = useState('');
+  const debounce = useCallback(
+    _.debounce((x: string) => {
+      x = x.replace(/^http(s?):\/\/osu-mgr.org\//i, '');
+    }, 500),
+    [setOSUID, osuID]
+  );
+  return (
+    <Input
+      fluid
+      iconPosition="left"
+      placeholder={`Add Item to Location ...`}
+      style={{ margin: '1rem 0' }}
+      value={osuID}
+      onChange={(_event, data) => {
+        console.log('Setting location for', data.value, 'to', location);
+        setOSUID(data.value);
+        debounce(data.value);
+      }}
+      action
+    >
+      <Icon name="plus" />
+      <input />
+      <Button
+        basic={osuID !== ''}
+        icon="close"
+        disabled={osuID === ''}
+        onClick={() => {
+          setOSUID('');
+        }}
+      />
+    </Input>
+  );
+};
+
 const ListItemCounts: FunctionComponent<{
   icon?: SemanticICONS;
   cornerIcon?: SemanticICONS;
@@ -222,6 +263,7 @@ const LocationsPage: FunctionComponent<{
 
   const view = search.view !== 'items' && slot ? 'items' : search.view;
 
+  console.log('LocationsPage', location, rack, position, slot, view, search);
   return (
     <>
       <LocationsSearchBar plural="Items" />
@@ -401,7 +443,7 @@ const LocationsPage: FunctionComponent<{
         {search.view == 'locations' &&
           location &&
           !rack &&
-          locationRacks[location].map((x) => (
+          locationRackNames[location].map((x) => (
             <ListItemCounts
               key={`rack_${x}`}
               title={`${location}-${x}`}
@@ -416,7 +458,7 @@ const LocationsPage: FunctionComponent<{
           location &&
           rack &&
           !position &&
-          locationPositions[location][rack].map((x) => (
+          locationPositionNames[location][rack].map((x) => (
             <ListItemCounts
               key={`position_${x}`}
               title={`${location}-${rack}-${x}`}
@@ -435,7 +477,7 @@ const LocationsPage: FunctionComponent<{
           !slot && (
             <PageScroll
               pageSize={10}
-              rows={locationSlots[location][rack][position].map((x) => (
+              rows={locationSlotNames[location][rack][position].map((x) => (
                 <ListItemCounts
                   key={`slot_${x}`}
                   title={`${location}-${rack}-${position}-${x}`}
@@ -452,39 +494,56 @@ const LocationsPage: FunctionComponent<{
           )) ||
           ''}
       </List>
-      {((search.view == 'items' || slot) && itemsCount && (
-        <PageScroll
-          pageSize={10}
-          rows={[...Array(itemsCount).keys()].map((i) => (
-            <LocationsRowsBlock
-              key={`item_${i}`}
-              minRowHeight={50}
-              from={i * 10}
-              size={10}
-              location={location}
-              rack={rack}
-              position={position}
-              slot={slot}
-              itemRow={(hit) => (
-                <ItemsSectionHalfModal
-                  uuid={hit._source._uuid}
-                  key={hit._source._uuid}
-                >
-                  <List.Item as="a" style={{ minHeight: 50 }}>
-                    <ItemsItemRow
-                      item={hit._source}
-                      matches={hit.highlight}
-                      title={hit._source._osuid}
-                    />
-                  </List.Item>
-                </ItemsSectionHalfModal>
-              )}
-            />
-          ))}
-        />
-      )) ||
-        ''}
       {search.view == 'map' && !location && <LocationsMap />}
+      {search.view == 'map' && location && !rack && (
+        <LocationsZone zone={location} />
+      )}
+      {search.view == 'map' && location && rack && !position && (
+        <LocationsRack zone={location} rack={rack} />
+      )}
+      {search.view == 'map' && location && rack && position && !slot && (
+        <LocationsPosition zone={location} rack={rack} position={position} />
+      )}
+      {((search.view == 'items' || (location && rack && position && slot)) &&
+        itemsCount !== undefined && (
+          <>
+            {location && rack && position && slot && (
+              <LocationsAddItem
+                location={`${location}-${rack}-${position}-${slot}`}
+              />
+            )}
+            <PageScroll
+              pageSize={10}
+              rows={[...Array(Math.ceil(itemsCount / 10)).keys()].map((i) => (
+                <LocationsRowsBlock
+                  key={`item_${i}`}
+                  minRowHeight={50}
+                  from={i * 10}
+                  size={10}
+                  location={location}
+                  rack={rack}
+                  position={position}
+                  slot={slot}
+                  itemRow={(hit) => (
+                    <ItemsSectionHalfModal
+                      uuid={hit._source._uuid}
+                      key={hit._source._uuid}
+                    >
+                      <List.Item as="a" style={{ minHeight: 50 }}>
+                        <ItemsItemRow
+                          item={hit._source}
+                          matches={hit.highlight}
+                          title={hit._source._osuid}
+                        />
+                      </List.Item>
+                    </ItemsSectionHalfModal>
+                  )}
+                />
+              ))}
+            />
+          </>
+        )) ||
+        ''}
     </>
   );
 };

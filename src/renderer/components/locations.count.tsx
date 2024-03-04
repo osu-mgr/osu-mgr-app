@@ -8,6 +8,8 @@ import { historyState } from '../stores/history';
 import { ItemsSearch, itemsSearchState } from '../stores/items';
 import { countByLocation } from '../common/es';
 
+const locationsCountCache = new Map<string, number>();
+
 const LocationsCount: FunctionComponent<{
   location?: string;
   rack?: string;
@@ -39,10 +41,19 @@ const LocationsCount: FunctionComponent<{
     threshold: 0,
   });
   useEffect(() => {
-    setItemsCount(undefined);
+    const key = `${location || ''}:${rack || ''}:${position || ''}:${
+      slot || ''
+    }:${JSON.stringify(search)}:${filter || ''}`;
+    if (locationsCountCache.has(key)) {
+      setItemsCount(locationsCountCache.get(key));
+      if (isMounted() && !history.switching && onCount)
+        onCount(locationsCountCache.get(key) || 0);
+    } else {
+      setItemsCount(undefined);
+    }
     if (isMounted() && !history.switching)
       (async () => {
-        const update = await countByLocation(
+        const updatedCount = await countByLocation(
           location,
           rack,
           position,
@@ -50,8 +61,9 @@ const LocationsCount: FunctionComponent<{
           filter ? ({ ...search, filter: undefined } as ItemsSearch) : search,
           filter
         );
-        if (onCount) onCount(update);
-        if (isMounted() && !history.switching) setItemsCount(update);
+        locationsCountCache.set(key, updatedCount);
+        if (onCount) onCount(updatedCount);
+        if (isMounted() && !history.switching) setItemsCount(updatedCount);
       })();
   }, [
     history,

@@ -1,11 +1,21 @@
 import { FunctionComponent } from 'react';
 import { List } from 'semantic-ui-react';
 import OSUMGRLogo from '../static/Website Logo-2020.svg';
+import OSUMGRSticker from '../static/marine&geology_sticker_final.png';
 import ListItemHistoryPushLink from './list.item.history-push.link';
 
 const HomePage: FunctionComponent = () => {
   return (
     <List relaxed divided>
+      <img
+        alt="OSU MGR Sticker"
+        src={OSUMGRSticker}
+        style={{
+          display: 'block',
+          width: '10rem',
+          margin: '1rem auto',
+        }}
+      />
       <img
         alt="OSU MGR Logo"
         src={OSUMGRLogo}
@@ -26,6 +36,7 @@ const HomePage: FunctionComponent = () => {
         path="Sample Requests"
         title="Sample Requests"
         icon="clipboard list"
+        disabled
       >
         Manage Sample Requests
       </ListItemHistoryPushLink>
@@ -40,6 +51,7 @@ const HomePage: FunctionComponent = () => {
         path="File Monitoring"
         title="File Monitoring"
         icon="folder"
+        disabled
       >
         Detect Changes and Import Files
       </ListItemHistoryPushLink>

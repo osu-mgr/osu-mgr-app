@@ -2475,7 +2475,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2483,7 +2483,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2491,7 +2491,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2499,7 +2499,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2507,7 +2507,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2515,7 +2515,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2523,7 +2523,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2531,7 +2531,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2539,7 +2539,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2547,7 +2547,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2555,7 +2555,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2563,7 +2563,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2571,7 +2571,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2579,7 +2579,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     {
@@ -2587,7 +2587,7 @@ export const locationPositionConfigurations = {
       maxPounds: 1450,
       boxes: {
         v: [1, 2, 3, 4],
-        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+        h: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       },
     },
     { name: '', noShelf: true },
@@ -2609,44 +2609,73 @@ export const locationPositionConfigurations = {
 };
 
 export const locationRacks = {};
-export const locationPositions = {};
-export const locationSlots = {};
-locationAreas.forEach((area) => {
-  locationRacks[area] = [];
-  locationPositions[area] = {};
-  locationSlots[area] = {};
-  locationRackConfigurations[area].forEach((racks) => {
+export const locationRackNames = {};
+export const locationRacksMaxPounds = {};
+export const locationPositionNames = {};
+export const locationPositionsMaxPounds = {};
+export const locationPositionSlots = {};
+export const locationSlotNames = {};
+locationAreas.forEach((zone) => {
+  locationRacks[zone] = {};
+  locationRackNames[zone] = [];
+  locationRacksMaxPounds[zone] = {};
+  locationPositionsMaxPounds[zone] = {};
+  locationPositionNames[zone] = {};
+  locationPositionSlots[zone] = {};
+  locationSlotNames[zone] = {};
+  locationRackConfigurations[zone].forEach((racks) => {
     racks.racks?.forEach((rack) => {
-      if (rack?.name !== undefined) locationRacks[area].push(rack?.name);
+      if (rack?.name !== undefined) locationRackNames[zone].push(rack.name);
+      if (rack?.name !== undefined) locationRacks[zone][rack.name] = rack;
       if (rack?.name !== undefined && rack?.type !== undefined) {
-        locationPositions[area][rack.name] = [];
-        locationSlots[area][rack.name] = {};
+        locationPositionsMaxPounds[zone][rack.name] = {};
+        locationPositionNames[zone][rack.name] = [];
+        locationPositionSlots[zone][rack.name] = {};
+        locationSlotNames[zone][rack.name] = {};
         locationPositionConfigurations[rack.type].forEach((shelf) => {
+          if (shelf?.maxPounds !== undefined) {
+            locationRacksMaxPounds[zone][rack.name] =
+              locationRacksMaxPounds[zone][rack.name] || 0;
+            locationRacksMaxPounds[zone][rack.name] += shelf.maxPounds;
+            if (shelf?.name !== undefined)
+              locationRacksMaxPounds[zone][rack.name][shelf.name] =
+                shelf.maxPounds;
+          }
           if (shelf?.positions) {
             shelf.positions.forEach((position) => {
-              locationPositions[area][rack.name].push(position.name);
-              locationSlots[area][rack.name][position.name] = [];
+              locationPositionNames[zone][rack.name].push(position.name);
+              locationPositionsMaxPounds[zone][rack.name][position.name] =
+                shelf.maxPounds / shelf.positions.length;
+              locationPositionSlots[zone][rack.name][position.name] = {
+                v: position.slots?.v || [],
+                h: position.slots?.h || [],
+              };
+              locationSlotNames[zone][rack.name][position.name] = [];
               if (position.slots?.h && position.slots?.v) {
                 position.slots.h.forEach((h) => {
                   position.slots.v.forEach((v) => {
-                    locationSlots[area][rack.name][position.name].push(
+                    locationSlotNames[zone][rack.name][position.name].push(
                       `${h}${v}`
                     );
                   });
                 });
               }
               if (position.totes) {
-                locationSlots[area][rack.name][position.name] = [
+                locationSlotNames[zone][rack.name][position.name] = [
                   ...Array(position.totes[2]).keys(),
                 ].map((x) => `${x + 1}`.padStart(2, '0'));
               }
             });
           } else if (shelf?.boxes) {
-            locationPositions[area][rack.name].push(shelf.name);
-            locationSlots[area][rack.name][shelf.name] = [];
+            locationPositionNames[zone][rack.name].push(shelf.name);
+            locationPositionSlots[zone][rack.name][shelf.name] = {
+              v: shelf.boxes?.v || [],
+              h: shelf.boxes?.h || [],
+            };
+            locationSlotNames[zone][rack.name][shelf.name] = [];
             shelf.boxes.h.forEach((h) => {
               shelf.boxes.v.forEach((v) => {
-                locationSlots[area][rack.name][shelf.name].push(`${h}${v}`);
+                locationSlotNames[zone][rack.name][shelf.name].push(`${h}${v}`);
               });
             });
           }
@@ -2654,15 +2683,17 @@ locationAreas.forEach((area) => {
       }
     });
   });
-  locationRacks[area] = locationRacks[area].sort();
+  locationRackNames[zone] = locationRackNames[zone].sort();
 });
 
-console.log('locationRacks', locationRacks);
-console.log('locationPositions', locationPositions);
-console.log('locationSlots', locationSlots);
+console.log('locationRacks:', locationRacks);
+console.log('locationRackNames:', locationRackNames);
+console.log('locationRacksMaxPounds', locationRacksMaxPounds);
+console.log('locationPositionNames', locationPositionNames);
+console.log('locationSlotNames', locationSlotNames);
 
 export const locationPrefixesName: Record<
-  typeof locationAreas[number],
+  (typeof locationAreas)[number],
   string
 > = {
   DW: 'Dry West',
@@ -2675,7 +2706,7 @@ export const locationPrefixesName: Record<
 };
 
 export const locationPrefixesIcon: Record<
-  typeof locationAreas[number],
+  (typeof locationAreas)[number],
   SemanticICONS
 > = {
   DW: 'thermometer half',
@@ -2688,7 +2719,7 @@ export const locationPrefixesIcon: Record<
 };
 
 export const locationPrefixesCornerIcon: Record<
-  typeof locationAreas[number],
+  (typeof locationAreas)[number],
   SemanticICONS
 > = {
   DW: 'chevron circle left',

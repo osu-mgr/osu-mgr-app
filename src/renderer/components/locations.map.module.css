@@ -21,8 +21,8 @@
 }
 
 .map {
-  width: calc(60vmin);
-  height: calc(1.71051 * (60vmin));
+  width: calc(70vmin);
+  height: calc(1.71051 * (70vmin));
   margin: 0 auto;
   border-collapse: collapse;
   position: relative;
@@ -34,19 +34,238 @@
   font-size: .6em;
 }
 
-.zoneLink {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
-}
-
 .zone {
   height: calc(100% - 2em);
   position: relative;
-  border: .3rem dashed #D73F09;
+  border: .1rem solid #595959;
+  background-color: lighten(#D73F09, 50%);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: bolder;
+}
+
+.zoneEmpty {
+  height: calc(100% - 2em);
+  position: relative;
+  border: .1rem solid #595959;
+  color: #595959;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bolder;
+}
+
+.zonePage {
+  height: calc(100% - 2em);
+  width: fit-content;
+  margin: auto;
+  padding: .5em;
+  position: relative;
+  border: .1rem solid #595959;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bolder;
+}
+
+.zoneTitle {
+  font-weight: bold;
+  color: #D73F09;
+  font-size: 1.2em;
+}
+
+.rack {
+  height: 3rem;
+  width: 7rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: lighten(#D73F09, 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rackEmpty {
+  height: 3rem;
+  width: 7rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: white;
+  color: #595959;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rackLabel {
+  font-weight: normal;
+  color: #595959;
+  font-size: 1em;
+  white-space: nowrap;
+
+}
+
+.rackCount {
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 2.3rem;
+  height: 2.3rem;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.capacity {
+  border-top: .1rem solid #595959;
+  width: 100%;
+  background-color: white;
+}
+
+.capacityBar {
+  height: .4rem;
+  background-color: #595959;
+}
+
+.capacityBarLoading {
+  width: 100%;
+  height: .4rem;
+  background: linear-gradient(-45deg,white, white 40%, rgb(89, 89, 89, 0.5) 40%, rgb(89, 89, 89, 0.5) 60%, white 60%, white);
+  background-size: 1em;
+  /*animation: capacityBar 0.5s linear infinite;*/
+}
+@keyframes capacityBar {
+  100% {
+    background-position: 1em 0;
+  }
+
+}
+
+.rackPage {
+  height: calc(100% - 2em);
+  width: fit-content;
+  margin: auto;
+  padding: .5em;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bolder;
+}
+
+.rackTable {
+  border-left: .3rem solid #595959;
+  border-right: .3rem solid #595959;
+}
+
+.position {
+  height: 8rem;
+  width: 10rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: lighten(#D73F09, 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.positionEmpty {
+  height: 8rem;
+  width: 10rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: white;
+  color: #595959;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.positionLabel {
+  font-weight: normal;
+  color: #595959;
+  font-size: 1em;
+  line-height: 1.3em;
+  white-space: nowrap;
+}
+
+.positionCount {
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 6rem;
+  height: 6rem;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.boxes {
+  height: 2rem;
+  width: 24rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: lighten(#D73F09, 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.boxesEmpty {
+  height: 2rem;
+  width: 24rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: white;
+  color: #595959;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.boxesCount {
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 1.3rem;
+  height: 1.3rem;
+  flex-grow: 1;
+  width: 100%;
+}
+
+
+.slot {
+  height: 2rem;
+  width: 3rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: lighten(#D73F09, 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.slotEmpty {
+  height: 2rem;
+  width: 3rem;
+  position: relative;
+  border: .1rem solid #595959;
+  background-color: white;
+  color: #595959;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.slotCount {
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 2rem;
+  height: 2rem;
+  flex-grow: 1;
+  width: 100%;
 }

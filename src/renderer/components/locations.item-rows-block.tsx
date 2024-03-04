@@ -37,16 +37,6 @@ const LocationsRowsBlock: FunctionComponent<{
   useEffect(() => {
     if (items === undefined && isVisible && isMounted())
       (async () => {
-        console.log(
-          'ItemsRowsBlock ?',
-          isVisible,
-          location,
-          rack,
-          position,
-          slot,
-          from,
-          size
-        );
         const update = await searchByLocation(
           location,
           rack,
@@ -75,7 +65,7 @@ const LocationsRowsBlock: FunctionComponent<{
           <Loader inline active style={{ marginTop: minRowHeight }} />
         </div>
       )}
-      {isVisible && items !== undefined && (
+      {isVisible && (items?.length || 0) > 0 && (
         <List relaxed divided>
           <div />
           {items?.map((item) => {

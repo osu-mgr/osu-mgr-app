@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent } from 'react';
+import { useState, FunctionComponent } from 'react';
 import { useRecoilState } from 'recoil';
 import LocationsCount from './locations.count';
 import { historyState } from '../stores/history';
@@ -9,6 +9,7 @@ const LocationsMapZone: FunctionComponent<{
   zone: string;
   style?: React.CSSProperties;
 }> = ({ zone, style }) => {
+  const [count, setCount] = useState<number | undefined>(undefined);
   const [history, setHistory] = useRecoilState(historyState);
   return (
     <a
@@ -26,38 +27,13 @@ const LocationsMapZone: FunctionComponent<{
           });
       }}
     >
-      <div className={styles.zone} style={style}>
-        <LocationsCount location={zone} />
-      </div>
-    </a>
-  );
-};
-
-const LocationsMapRack: FunctionComponent<{
-  zone: string;
-  rack: string;
-  style?: React.CSSProperties;
-}> = ({ zone, rack, style }) => {
-  const [history, setHistory] = useRecoilState(historyState);
-  return (
-    <a
-      href="#"
-      onClick={() => {
-        if (history.switching) return;
-        if (zone !== history.locations[history.index].path)
-          setHistory({
-            ...history,
-            index: history.index + 2,
-            locations: [
-              ...history.locations.slice(0, history.index + 1),
-              { path: zone },
-              { path: rack },
-            ],
-          });
-      }}
-    >
-      <div className={styles.zone} style={style}>
-        <LocationsCount location={zone} />
+      <div
+        className={
+          count === 0 || count === undefined ? styles.zoneEmpty : styles.zone
+        }
+        style={style}
+      >
+        <LocationsCount location={zone} onCount={(x) => setCount(x)} />
       </div>
     </a>
   );
@@ -147,7 +123,7 @@ const LocationsMap: FunctionComponent = () => {
             rowSpan={3}
           >
             <span className={styles.zoneLabel}>COLD WEST (CW)</span>
-            <LocationsMapRack zone="CW" rack="M2" />
+            <LocationsMapZone zone="CW" />
           </td>
           <td />
           <td

@@ -436,7 +436,7 @@ async function parseFiles(
 
     let wb: XLSX.WorkBook;
     try {
-      wb = XLSX.read(fileBuffer);
+      wb = XLSX.read(fileBuffer, { cellDates: true });
     } catch (e) {
       errors.push({ filePath, sheetRead: e });
       return;

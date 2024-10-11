@@ -2,8 +2,8 @@
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
- html {
-  font-size: calc(min(2.6vmin,20px)) !important;
+html {
+  font-size: calc(min(2.6vmin, 20px)) !important;
 }
 
 body {
@@ -15,27 +15,27 @@ body {
 }
 
 a,
-.ui.list .list>.item a.header,
-.ui.list>.item a.header,
-.ui.list>.item header.header {
+.ui.list .list > .item a.header,
+.ui.list > .item a.header,
+.ui.list > .item header.header {
   text-decoration: none;
-  color: #D73F09 !important;
+  color: #d73f09 !important;
 }
 
 a:hover,
-.ui.list .list>.item a.header:hover,
-.ui.list>.item a.header:hover,
-.ui.list>.item header.header:hover {
-  color: #D73F09 !important;
+.ui.list .list > .item a.header:hover,
+.ui.list > .item a.header:hover,
+.ui.list > .item header.header:hover {
+  color: #d73f09 !important;
   filter: brightness(90%);
 }
 
 .highlight {
-  color: #D73F09 !important;
+  color: #d73f09 !important;
 }
 
 .ui.primary.button {
-  background-color: #D73F09 !important;
+  background-color: #d73f09 !important;
 }
 
 .ui.primary.button:hover {
@@ -47,27 +47,19 @@ a:hover,
 }
 
 .ui.icon i.icons .corner.icon {
-  text-shadow:
-  -1px -1px 0 #D73F09,
-  1px -1px 0 #D73F09,
-  -1px 1px 0 #D73F09,
-  1px 1px 0 #D73F09;
+  text-shadow: -1px -1px 0 #d73f09, 1px -1px 0 #d73f09, -1px 1px 0 #d73f09,
+    1px 1px 0 #d73f09;
 }
 
-.ui.icon.button>.content,
-.ui.icon.buttons .button>.content {
+.ui.icon.button > .content,
+.ui.icon.buttons .button > .content {
   margin-left: 0.5em;
   display: inline-block;
 }
 
-.ui.dropdown>.dropdown.icon {
+.ui.dropdown > .dropdown.icon {
   margin-right: -0.75em !important;
   margin-left: 0.5em !important;
-}
-
-.ui.icon.button > .icon, .ui.icon.buttons .button > .icon
-.ui.input input:focus {
-  border-color: #D73F09 !important;
 }
 
 .ui.grid {
@@ -75,27 +67,221 @@ a:hover,
   margin-right: -0.5rem !important;
 }
 
-.ui.grid >* {
+.ui.grid > * {
   padding-left: 0.5rem !important;
   padding-right: 0.5rem !important;
 }
 
 .ui.loader.inline-loader {
-  margin-left: .25em !important;
+  margin-left: 0.25em !important;
   width: 1em !important;
-  height: .5em !important;
+  height: 0.5em !important;
 }
+
 .ui.loader.inline-loader::before,
 .ui.loader.inline-loader::after {
   width: 1em;
   height: 1em;
-  margin-top: -.35em;
-  margin-left: -.5em;
-  border-width: .15em;
+  margin-top: -0.35em;
+  margin-left: -0.5em;
+  border-width: 0.15em;
 }
 
-.ui.label>.detail {
+.ui.label > .detail {
   font-weight: 500;
-  margin-left: .5em;
-  margin-right: .5em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+.ui.icon.button > .icon,
+.ui.icon.buttons .button > .icon,
+.ui.input input:focus,
+.ui.action.input:not([class*='left action']) > input:focus,
+.ui.input textarea:focus,
+.ui.action.input:not([class*='left action']) > textarea:focus {
+  border-color: #d73f09 !important;
+}
+
+.ui.input > textarea {
+  margin: 0;
+  max-width: 100%;
+  -webkit-box-flex: 1;
+  -ms-flex: 1 0 auto;
+  flex: 1 0 auto;
+  outline: 0;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+  text-align: left;
+  line-height: 1.21428571em;
+  font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  padding: 0.67857143em 1em;
+  background: #fff;
+  border: 1px solid rgba(34, 36, 38, 0.15);
+  color: rgba(0, 0, 0, 0.87);
+  border-radius: 0.28571429rem;
+  -webkit-transition: border-color 0.1s ease, -webkit-box-shadow 0.1s ease;
+  transition: border-color 0.1s ease, -webkit-box-shadow 0.1s ease;
+  transition: box-shadow 0.1s ease, border-color 0.1s ease;
+  transition: box-shadow 0.1s ease, border-color 0.1s ease,
+    -webkit-box-shadow 0.1s ease;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.ui.input > textarea::-webkit-input-placeholder {
+  color: rgba(191, 191, 191, 0.87);
+}
+
+.ui.disabled.input,
+.ui.input:not(.disabled) textarea[disabled] {
+  opacity: 0.45;
+}
+
+.ui.disabled.input > input,
+.ui.input:not(.disabled) textarea[disabled] {
+  pointer-events: none;
+}
+
+.ui.input.down input,
+.ui.input > textarea:active {
+  border-color: rgba(0, 0, 0, 0.3);
+  background: #fafafa;
+  color: rgba(0, 0, 0, 0.87);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.ui.input.focus > textarea,
+.ui.input > textarea:focus {
+  border-color: #85b7d9;
+  background: #fff;
+  color: rgba(0, 0, 0, 0.8);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.ui.input.focus > textarea::-webkit-input-placeholder,
+.ui.input > textarea:focus::-webkit-input-placeholder {
+  color: rgba(115, 115, 115, 0.87);
+}
+
+.ui.input.error > textarea {
+  background-color: #fff6f6;
+  border-color: #e0b4b4;
+  color: #9f3a38;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.ui.input.error > textarea::-webkit-input-placeholder {
+  color: #e7bdbc;
+}
+
+.ui.input.error > textarea:focus::-webkit-input-placeholder {
+  color: #da9796;
+}
+
+.ui.transparent.input > textarea {
+  border-color: transparent !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.ui.icon.input > textarea {
+  padding-left: 0 !important;
+  padding-right: 2.67142857em !important;
+}
+
+.ui[class*='left icon'].input > textarea {
+  padding-left: 2.67142857em !important;
+  padding-right: 0 !important;
+}
+
+.ui.transparent.icon.input > textarea {
+  padding-left: 0 !important;
+  padding-right: 2em !important;
+}
+
+.ui.transparent[class*='left icon'].input > textarea {
+  padding-left: 2em !important;
+  padding-right: 0 !important;
+}
+
+.ui.transparent.inverted.input > textarea {
+  color: inherit;
+}
+
+.ui.transparent.inverted.input > textarea::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ui.icon.input > textarea {
+  padding-right: 2.67142857em !important;
+}
+
+.ui.icon.input > textarea:focus ~ i.icon {
+  opacity: 1;
+}
+
+.ui[class*='right labeled'].input > textarea {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right-color: transparent !important;
+}
+
+.ui[class*='right labeled'].input > textarea + .label {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.ui[class*='right labeled'].input > textarea:focus {
+  border-right-color: #85b7d9 !important;
+}
+
+.ui[class*='corner labeled']:not([class*='left corner labeled']).labeled.input
+  > textarea {
+  padding-right: 2.5em !important;
+}
+
+.ui[class*='corner labeled'].icon.input:not([class*='left corner labeled'])
+  > textarea {
+  padding-right: 3.25em !important;
+}
+
+.ui[class*='left corner labeled'].labeled.input > textarea {
+  padding-left: 2.5em !important;
+}
+
+.ui[class*='left corner labeled'].icon.input > textarea {
+  padding-left: 3.25em !important;
+}
+
+.ui.action.input:not([class*='left action']) > textarea {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right-color: transparent !important;
+}
+
+.ui.action.input:not([class*='left action']) > textarea:focus {
+  border-right-color: #85b7d9 !important;
+}
+
+.ui[class*='left action'].input > textarea {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-left-color: transparent !important;
+}
+
+.ui[class*='left action'].input > textarea:focus {
+  border-left-color: #85b7d9 !important;
+}
+
+.ui.inverted.input > textarea {
+  border: none;
+}
+
+.ui.fluid.input > textarea {
+  width: 0 !important;
 }

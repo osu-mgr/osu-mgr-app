@@ -50,7 +50,7 @@ const runValidation = () => {
       console.log('Validating batch of items...');
       const params = {
         size: 10000,
-        index: 'osu-mgr-8',
+        index: 'osu-mgr',
         body: {
           query: {
             bool: {

@@ -37,7 +37,7 @@ const LocationsRowsBlock: FunctionComponent<{
   useEffect(() => {
     if (items === undefined && isVisible && isMounted())
       (async () => {
-        const update = await searchByLocation(
+        const matchedItems = await searchByLocation(
           location,
           rack,
           position,
@@ -46,9 +46,21 @@ const LocationsRowsBlock: FunctionComponent<{
           from,
           size
         );
-        if (isMounted()) setItems(update);
+        if (isMounted()) setItems(matchedItems);
       })();
   }, [isMounted, isVisible, items, search, from, size]);
+  console.log('LocationsRowsBlock', {
+    location,
+    rack,
+    position,
+    slot,
+    from,
+    size,
+    isMounted,
+    isVisible,
+    items,
+    search,
+  });
   return (
     <div
       ref={ref}

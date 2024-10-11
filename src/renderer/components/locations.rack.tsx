@@ -101,6 +101,8 @@ const LocationsMapBoxes: FunctionComponent<{
   );
 };
 
+// const shelfWeightCache = new Map<string, {}>();
+
 const ShelfWeight: FunctionComponent<{
   zone: string;
   rack: string;

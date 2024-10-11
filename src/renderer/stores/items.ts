@@ -20,7 +20,7 @@ const itemsSearchDefault: ItemsSearch = {
   tap: 1,
 };
 export const itemsSearchState = atom({
-  key: 'search',
+  key: 'items-search',
   default: itemsSearchDefault,
 });
 
@@ -35,7 +35,7 @@ export const itemTypes = [
   'diveSubsample',
 ];
 
-export type ItemType = typeof itemTypes[number];
+export type ItemType = (typeof itemTypes)[number];
 
 export const itemTypesSingular: Record<ItemType, string> = {
   cruise: 'Cruise/Program',
@@ -310,6 +310,7 @@ export interface DiveSampleData extends DiveSampleSubsampleData {
   longitudeEnd?: string;
   waterDepthStart?: string;
   waterDepthEnd?: string;
+  storageLocation?: string;
 }
 export interface DiveSampleHistory extends ItemHistory {
   snapshot?: DiveSampleData;

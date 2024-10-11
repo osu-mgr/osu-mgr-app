@@ -58,6 +58,7 @@ const LocationsPosition: FunctionComponent<{
   position: string;
 }> = ({ zone, rack, position }) => {
   const slots = locationPositionSlots[zone][rack][position];
+  console.log('Slots', slots);
   return (
     <div style={{ textAlign: 'center' }}>
       <span className={styles.zoneTitle}>

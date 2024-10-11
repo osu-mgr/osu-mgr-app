@@ -68,7 +68,7 @@ const client: Client = new Client({
     // ipcRenderer.sendSync('ipc-env', 'ES_NODE') ||
     'https://admin:admin@opensearch.marfik.earthref.org:9400',
 });
-const index = 'osu-mgr-8'; // ipcRenderer.sendSync('ipc-env', 'ES_INDEX') || 'osu-mgr-dev';
+const index = 'osu-mgr'; // ipcRenderer.sendSync('ipc-env', 'ES_INDEX') || 'osu-mgr-dev';
 
 export async function* scrollSearch(params: any) {
   let response: ApiResponse<SearchResponse> = await client.search(params);
@@ -99,6 +99,7 @@ export const indexDocs = async (docs: Items[]) => {
 
 export const searchByOSUIDPrefix = async (
   igsnPrefix: string,
+  exact?: boolean,
   type?: DocType
 ): Promise<Hit[]> => {
   const must = type ? [{ term: { '_docType.keyword': type } }] : [];
@@ -111,9 +112,10 @@ export const searchByOSUIDPrefix = async (
         bool: {
           must,
           should: [
-            { prefix: { '_osuid.keyword': `${igsnPrefix}-` } },
+            exact ? { prefix: { '_osuid.keyword': `${igsnPrefix}-` } } : {},
             { term: { '_osuid.keyword': `${igsnPrefix}` } },
           ],
+          minimum_should_match: 1,
         },
       },
     },
@@ -287,7 +289,7 @@ export const searchByType = async (
       {
         script: {
           script:
-            "doc['_validated'].value.millis > doc['_modified'].value.millis",
+            "doc['_validated'].value.millis >= doc['_modified'].value.millis",
         },
       },
     ];
@@ -393,7 +395,7 @@ export const countByType = async (
       {
         script: {
           script:
-            "doc['_validated'].value.millis > doc['_modified'].value.millis",
+            "doc['_validated'].value.millis >= doc['_modified'].value.millis",
         },
       },
     ];
@@ -462,7 +464,6 @@ export const searchByLocation = async (
                 query: search.searchString.toLowerCase(),
                 type: 'bool_prefix',
                 fields: ['*.substring'],
-                operator: 'and',
                 analyzer: 'whitespace',
               },
             },
@@ -492,7 +493,7 @@ export const searchByLocation = async (
       {
         script: {
           script:
-            "doc['_validated'].value.millis > doc['_modified'].value.millis",
+            "doc['_validated'].value.millis >= doc['_modified'].value.millis",
         },
       },
     ];
@@ -616,7 +617,7 @@ export const countByLocation = async (
       {
         script: {
           script:
-            "doc['_validated'].value.millis > doc['_modified'].value.millis",
+            "doc['_validated'].value.millis >= doc['_modified'].value.millis",
         },
       },
     ];
@@ -727,3 +728,13 @@ export const storageByLocation = async (
   }
   return _.keys(storageLocations);
 };
+
+// export const upsertItem = async (item: Item) => {
+//   const params: RequestParams.Index = {
+//     index,
+//     id: item._uuid,
+//     body: item,
+//   };
+//   const response = await client.index(params);
+//   return response;
+// }

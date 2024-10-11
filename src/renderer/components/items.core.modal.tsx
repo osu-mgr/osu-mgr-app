@@ -19,6 +19,13 @@ import GridButtonIcon from './grid.button.icon';
 import ItemsFormInput from './items.form.input';
 import ItemsPrintLabelsModal from './items.print-labels.modal';
 
+const ExcelDateIntToDateStr = (date: string | undefined): string => {
+  const dateInt = Number.parseInt(date || '', 10);
+  if (dateInt === 0 || isNaN(dateInt)) return '';
+  const dateObj = new Date((dateInt - (25567 + 1)) * 86400 * 1000);
+  return dateObj.toISOString().split('T')[0];
+};
+
 const ItemsCoreModal: FunctionComponent<{
   uuid?: string;
 }> = ({ children, uuid }) => {
@@ -161,9 +168,15 @@ const ItemsCoreModal: FunctionComponent<{
           <ItemsFormInput
             fluid
             label="Start Date"
-            value={core?.startDate || ''}
+            value={
+              ExcelDateIntToDateStr(core?.startDate) || core?.startDate || ''
+            }
           />
-          <ItemsFormInput fluid label="End Date" value={core?.endDate || ''} />
+          <ItemsFormInput
+            fluid
+            label="End Date"
+            value={ExcelDateIntToDateStr(core?.endDate) || core?.endDate || ''}
+          />
         </FormGridColumns>
         <FormGridColumns widths={[8, 8]}>
           <ItemsFormInput

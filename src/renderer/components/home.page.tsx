@@ -66,6 +66,14 @@ const HomePage: FunctionComponent = () => {
       >
         View Repository Reports
       </ListItemHistoryPushLink>
+      <ListItemHistoryPushLink
+        path="Settings"
+        title="Settings"
+        icon="cogs"
+        disabled
+      >
+        Edit Repository Settings
+      </ListItemHistoryPushLink>
     </List>
   );
 };

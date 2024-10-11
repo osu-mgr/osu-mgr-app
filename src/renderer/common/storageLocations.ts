@@ -2634,12 +2634,16 @@ locationAreas.forEach((zone) => {
         locationSlotNames[zone][rack.name] = {};
         locationPositionConfigurations[rack.type].forEach((shelf) => {
           if (shelf?.maxPounds !== undefined) {
-            locationRacksMaxPounds[zone][rack.name] =
-              locationRacksMaxPounds[zone][rack.name] || 0;
-            locationRacksMaxPounds[zone][rack.name] += shelf.maxPounds;
-            if (shelf?.name !== undefined)
+            if (shelf?.name !== undefined) {
+              locationRacksMaxPounds[zone][rack.name] =
+                locationRacksMaxPounds[zone][rack.name] || {};
               locationRacksMaxPounds[zone][rack.name][shelf.name] =
                 shelf.maxPounds;
+            } else {
+              locationRacksMaxPounds[zone][rack.name] =
+                locationRacksMaxPounds[zone][rack.name] || 0;
+              locationRacksMaxPounds[zone][rack.name] += shelf.maxPounds;
+            }
           }
           if (shelf?.positions) {
             shelf.positions.forEach((position) => {

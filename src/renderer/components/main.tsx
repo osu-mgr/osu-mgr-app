@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import SwipeableViews from 'react-swipeable-views';
 import { Dimmer } from 'semantic-ui-react';
@@ -25,7 +25,8 @@ const Router: FunctionComponent<{ path: string }> = ({ path }) => {
   if (
     history.locations.length > 1 &&
     history.locations[1].path === 'Storage Locations'
-  )
+  ) {
+    console.log('History', history);
     return (
       <LocationsPage
         location={
@@ -38,11 +39,27 @@ const Router: FunctionComponent<{ path: string }> = ({ path }) => {
         slot={(history.index >= 5 && history.locations[5].path) || undefined}
       />
     );
+  }
   return <ErrorPage />;
 };
 
 const Main: FunctionComponent = () => {
   const [history, setHistory] = useRecoilState(historyState);
+
+  return (
+    <div
+      style={{
+        marginTop: '2.5rem',
+        height: 'calc(100vh - 4.5rem)',
+        width: '100vw',
+        padding: '0 .5rem',
+        overflowY: 'scroll',
+      }}
+    >
+      <Router path={history.locations[history.index].path} />
+    </div>
+  );
+
   return (
     <SwipeableViews
       enableMouseEvents
@@ -64,10 +81,12 @@ const Main: FunctionComponent = () => {
             overflowY: 'scroll',
           }}
         >
-          <Dimmer.Dimmable dimmed={index !== history.index}>
-            <Router path={location.path} />
-            <Dimmer inverted active={index !== history.index} />
-          </Dimmer.Dimmable>
+          {index >= history.index - 1 && index <= history.index + 1 && (
+            <Dimmer.Dimmable dimmed={index !== history.index}>
+              <Router path={location.path} />
+              <Dimmer inverted active={index !== history.index} />
+            </Dimmer.Dimmable>
+          )}
         </div>
       ))}
     </SwipeableViews>

@@ -16,12 +16,12 @@ export type LocationsSearch = {
 };
 const locationsSearchDefault: LocationsSearch = {
   searchString: '',
-  hideEmpty: false,
+  hideEmpty: true,
   sortOrder: 'ids asc',
   view: 'locations',
   tap: 1,
 };
 export const locationsSearchState = atom({
-  key: 'search',
+  key: 'locations-search',
   default: locationsSearchDefault,
 });

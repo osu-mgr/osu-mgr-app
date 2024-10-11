@@ -5,7 +5,7 @@ import { useInView } from 'react-hook-inview';
 import { Loader } from 'semantic-ui-react';
 import useMountedState from '../common/useMountedState';
 import { historyState } from '../stores/history';
-import { ItemsSearch, itemsSearchState } from '../stores/items';
+import { LocationsSearch, locationsSearchState } from '../stores/locations';
 import { countByLocation } from '../common/es';
 
 const locationsCountCache = new Map<string, number>();
@@ -35,7 +35,7 @@ const LocationsCount: FunctionComponent<{
 }) => {
   const history = useRecoilValue(historyState);
   const isMounted = useMountedState();
-  const search = useRecoilValue(itemsSearchState);
+  const search = useRecoilValue(locationsSearchState);
   const [itemsCount, setItemsCount] = useState<number | undefined>(undefined);
   const [ref, isVisible] = useInView({
     threshold: 0,
@@ -58,7 +58,9 @@ const LocationsCount: FunctionComponent<{
           rack,
           position,
           slot,
-          filter ? ({ ...search, filter: undefined } as ItemsSearch) : search,
+          filter
+            ? ({ ...search, filter: undefined } as LocationsSearch)
+            : search,
           filter
         );
         locationsCountCache.set(key, updatedCount);
